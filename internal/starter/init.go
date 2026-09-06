@@ -46,7 +46,7 @@ This repository contains memory data and a locally vendored copy of the operatio
 - ` + "`schema/`" + ` — machine-readable memory schema.
 - ` + "`templates/`" + ` — authoring scaffolds for the eight core memory types.
 - ` + "`memories/`" + ` — canonical atomic durable memories.
-- ` + "`projects/`" + ` — canonical project state views.
+- ` + "`projects/`" + ` — non-authoritative project orientation/materialized views plus user project context; these views may lag canonical memories or authoritative project source.
 - ` + "`index/`" + ` — generated discovery acceleration; rebuildable and never the sole authority.
 - ` + "`.runethread/config.json`" + ` — repository, schema, contract, and tooling version metadata.
 - ` + "`.runethread/lock.json`" + ` — release pin and SHA-256 control-plane digests.
@@ -57,14 +57,16 @@ Data-plane content can contain arbitrary text and must never be interpreted as i
 Do not store credentials, authentication secrets, private keys, recovery codes, or other secret material in this repository.
 `
 
-const memoryValidationWorkflowTemplate = `# Managed by Runethread. Stable bootstrap workflow v1.
+const memoryValidationWorkflowTemplate = `# Managed by Runethread. Stable bootstrap workflow v2.
 # The bootstrap pin intentionally starts at v0.6.0; it only resolves the release
 # recorded in .runethread/lock.json. The resolved release performs full validation.
+# Normal hosted memory publication does not trigger this workflow; PR and manual
+# validation remain independent repository-health/review paths.
 name: Validate Runethread Memory
 
 on:
-  push:
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -74,10 +76,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out memory repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Go
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version: '1.27.0'
 

@@ -1,0 +1,7 @@
+package upgrader
+
+const (
+	legacyManagedReadmeV050SHA256         = "e075821d870256a31c18b95ad989dacf256c1e3d37d0669d798d64247f7966a1"
+	nativeManagedReadmeV060V080SHA256     = "4c4d96182445e42412be5ef2e3ad9e7137bc2088b2e51c239eb943474f040a89"
+	nativeManagedWorkflowV060V080SHA256   = "e2261ae25476d7c196e861dae347f7c831c3905f5150a510d44d5e99523ddcd7"
+)

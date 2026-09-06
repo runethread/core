@@ -37,9 +37,11 @@ Runethread tracks separate compatibility dimensions:
 
 A runtime release change does not imply a contract change, and a contract change does not imply every other compatibility dimension changes.
 
-Runethread v0.8.0 introduces the explicit runtime/contract-release split through contract version 8. Under contract v8, `.runethread/config.json` and `.runethread/lock.json` retain the existing `runethread_version` field, but that field is the **contract release anchor**. Historical contract-v7 repositories keep their published v7 meaning until they are explicitly migrated.
+Runethread v0.8.0 introduced the explicit runtime/contract-release split through contract version 8. Under contract v8 and later contracts that retain the same metadata envelope, `.runethread/config.json` and `.runethread/lock.json` use `runethread_version` as the **contract release anchor**. Historical repositories keep their published contract meaning until they are explicitly migrated.
 
-The v0.8.0 transition keeps repository format 2, schema 1, index format 2, trust-lock version 2, bootstrap protocol 1, and bootstrap verifier v0.6.0 unchanged while advancing contract version from 7 to 8.
+The v0.8.0 transition kept repository format 2, schema 1, index format 2, trust-lock version 2, bootstrap protocol 1, and bootstrap verifier v0.6.0 unchanged while advancing contract version from 7 to 8.
+
+The v0.9.0 transition advances contract version from 8 to 9 while keeping repository format 2, schema 1, index format 2, trust-lock version 2, bootstrap protocol 1, and bootstrap verifier v0.6.0 unchanged. Contract v9 makes project current-state/overview prose explicitly non-authoritative asynchronous orientation/materialized projections: a valid atomic-memory write no longer depends on synchronizing those views, and retrieval must treat their freshness as explicit/possibly stale and fall back to canonical memories or authoritative project source when needed.
 
 ## Pinning
 
@@ -53,9 +55,11 @@ The contract-release identity and contract digests are recorded in `.runethread/
 
 ## Historical native source anchors
 
-Contract migrations are accepted only from explicitly supported exact source states. For the contract-v8 transition, Runethread preserves exact native v0.6.0 and v0.7.0 / contract-v7 source anchors rather than synthesizing historical state from the current generator.
+Contract migrations are accepted only from explicitly supported exact source states. Runethread preserves exact native v0.6.0 and v0.7.0 / contract-v7 source anchors and exact v0.8.0 / contract-v8 source anchors rather than synthesizing historical state from the current generator.
 
 Historical fixture material may reuse a current embedded contract byte only when its SHA-256 exactly matches the historical trusted lock for that path. Otherwise the historical byte must be frozen explicitly. Source tampering, mixed managed metadata, unsupported versions, or newer unknown states are refused before migration writes.
+
+For contract v9, the v0.8.0 historical fixture is taken from the actually migrated `runethread/memory-template` release state. Its config/lock, managed README, managed validation workflow, `.gitattributes`, and every contract byte that differs from v9 are frozen as historical evidence before the current generator changes.
 
 ## Filesystem-object compatibility boundary
 
@@ -63,7 +67,15 @@ Contract v8 makes authoritative repository filesystem objects fail-closed. Repos
 
 Migration source verification establishes those conditions before writes. Rollback snapshots operate on regular managed files and must not dereference a symbolic link and later restore copied target bytes in its place.
 
-Freshly initialized v8 memory repositories also include a managed root `.gitattributes` support file for byte-stable LF text checkouts. `.gitattributes` is repository/bootstrap support rather than a `ContractPaths()` member or trust-lock digest. A v7 -> v8 migration may create it when absent, accepts the exact managed bytes when already present, and refuses to overwrite a conflicting custom file.
+Freshly initialized v8+ memory repositories include a managed root `.gitattributes` support file for byte-stable LF text checkouts. `.gitattributes` is repository/bootstrap support rather than a `ContractPaths()` member or trust-lock digest. A supported migration may create it when absent, accepts the exact managed bytes when already present, and refuses to overwrite a conflicting custom file.
+
+## Managed support/bootstrap compatibility
+
+The generated memory README and `.github/workflows/validate.yml` are managed support/bootstrap state, not `ContractPaths()` members. They still require exact ownership recognition before automatic replacement.
+
+The contract-v9 migration recognizes the exact previously released Runethread-managed README/workflow bytes. The v9 workflow removes redundant validation on every normal canonical `push`, retains independent pull-request/manual validation paths, and pins every retained external GitHub Action to an immutable full commit SHA. Customized or unrecognized validation workflow bytes are refused rather than overwritten. Customized or unrecognized README bytes are preserved rather than silently replaced.
+
+Project-view user bytes under `projects/` are not rewritten merely to change their authority label. Existing current-state/overview prose survives the v8 -> v9 migration byte-for-byte unless a separately reviewed representation change explicitly requires otherwise.
 
 ## Migration design
 

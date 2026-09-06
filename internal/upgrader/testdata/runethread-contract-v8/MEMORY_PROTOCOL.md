@@ -32,7 +32,7 @@ An AI assistant using this repository MUST preserve these invariants.
 4. Markdown contains useful human-readable meaning, context, reasoning, and history.
 5. JSON contains identity, classification, provenance, retrieval metadata, lifecycle information, and relationships.
 6. Generated indexes are reconstructable discovery accelerators. They are not independent sources of truth and may be stale without invalidating canonical memories.
-7. Project current-state, overview, and summary documents are non-authoritative asynchronous orientation/materialized views. They may lag canonical memories or authoritative project sources and are never a completion dependency of an otherwise valid atomic-memory mutation.
+7. Current-state and summary documents are fast orientation views, not replacements for atomic memories.
 8. Historical information MUST NOT be silently rewritten merely to agree with current understanding.
 9. Corrections and supersession MUST preserve meaningful history.
 10. For current source-code facts, the actual project repository is authoritative.
@@ -85,7 +85,7 @@ Do not apply a simplistic “newest file wins” rule. Authority depends on the 
 
 A current explicit user instruction takes precedence over an older stored preference for the present interaction. The older preference remains historical context unless explicitly replaced.
 
-For Runethread operational behavior, the official **contract release** pinned by `.runethread/lock.json` is authoritative. `runethread_version` is the contract-release anchor under contract v8 and later contracts that retain this metadata field. Public `main` and a newer runtime/distribution release MUST NOT silently redefine an older repository. The hash-verified vendored control files are the local copy of the pinned authority.
+For Runethread operational behavior, the official **contract release** pinned by `.runethread/lock.json` is authoritative. `runethread_version` is the contract-release anchor under contract v8. Public `main` and a newer runtime/distribution release MUST NOT silently redefine an older repository. The hash-verified vendored control files are the local copy of the pinned authority.
 
 A newer runtime MAY operate against an unchanged pinned contract only when it embeds that exact contract release and all compatibility dimensions and digests remain valid. Runtime release identity alone MUST NOT cause a repository repin.
 
@@ -93,7 +93,7 @@ For current source code, build configuration, tests, dependencies, implementatio
 
 For atomic-memory natural-language meaning and reasoning, Markdown is authoritative. For identity, lifecycle, classification, provenance, search metadata, and relationships, the JSON sidecar is authoritative.
 
-Project current-state and overview documents are non-authoritative orientation/materialized views. When they conflict with validated atomic memories or an authoritative project source, or when their freshness is stale or unknown, use targeted canonical memories and the authoritative project source rather than guessing from the view.
+Current-state and overview documents are curated or derived views. When they conflict with validated atomic memories or an authoritative project source, investigate rather than guessing.
 
 Generated indexes are authoritative only as reproducible indexes generated from canonical metadata. They MUST NOT be treated as independent factual evidence.
 
@@ -107,7 +107,7 @@ Git history is an audit trail. A historical Git revision is not current truth me
 
 Begin from the narrowest useful entry point.
 
-For a project-specific question, first read the project's `overview.md` and/or `current-state.md` when available as orientation. Check its explicit `Last reviewed` or equivalent freshness signal before relying on it for present-state reasoning. If freshness is stale, absent, unknown, or material claims conflict with canonical memories or project source, fall back to targeted canonical memories and verify against the authoritative project repository/source where the question depends on current state. For preferences, begin with the relevant preference index when current. For unresolved work, begin with the open-loop index or project current state subject to the same freshness rule.
+For a project-specific question, first read the project's `overview.md` and/or `current-state.md` when available. For preferences, begin with the relevant preference index when current. For unresolved work, begin with the open-loop index or project current state.
 
 Do not begin by reading every memory in the repository.
 
@@ -252,15 +252,13 @@ Preserve A unless security, privacy, corruption, or explicit deletion requiremen
 
 # 15. Current-state documents
 
-Project current-state/overview documents are asynchronous orientation/materialized projections. They are deliberately non-authoritative and MAY lag newly committed atomic memories or authoritative project-source changes.
+Current-state documents bootstrap future conversations quickly. They SHOULD remain concise and contain an explicit `Last reviewed` date.
 
-Current-state documents SHOULD remain concise and contain an explicit `Last reviewed` date or equivalent freshness signal. When relevant to source-code state, record when the authoritative project repository was last verified and MAY record the verified branch/commit.
+When relevant to source-code state, record when the authoritative project repository was last verified and MAY record the verified branch/commit.
 
 Important current-state claims SHOULD reference supporting memory IDs when they exist. Current-state documents MUST NOT be the only location for durable information.
 
-An atomic-memory mutation does **not** require a project current-state/overview rewrite in the same transaction or before the memory write can be considered complete. Projection refresh is a separate operation with its own stale-read/concurrency checks. Provider or delivery code MUST NOT become a hidden project-summary semantic writer merely to complete an atomic memory mutation.
-
-When retrieval encounters a stale, missing, unknown-freshness, or conflicting project view, use targeted canonical memories and authoritative project sources as the fallback and report material uncertainty rather than treating the view as current truth.
+When a new memory materially changes present project state, synchronize the relevant current-state view.
 
 ---
 
@@ -354,7 +352,7 @@ Before claiming success, verify as many applicable invariants as tooling permits
 10. conditional fields obey type rules;
 11. temporal ordering is valid;
 12. generated indexes are rebuilt when possible, otherwise stale status is reported;
-13. project current-state/overview views are not treated as authoritative or as a prerequisite for atomic-memory completion;
+13. relevant current-state documents are synchronized when affected;
 14. secrets have not been introduced.
 
 Repository-wide invariants are specified in `docs/REPOSITORY_VALIDATION.md`.
@@ -393,10 +391,9 @@ A memory operation is complete only when:
 
 - intended durable information is represented without unnecessary duplication;
 - provenance and epistemic status are preserved;
-- relevant relationships and lifecycle changes are correct; and
+- relevant relationships and lifecycle changes are correct;
+- affected current-state views are synchronized where necessary; and
 - available authoritative-data validation passes.
-
-A project current-state/overview projection refresh is not required for atomic-memory completion. If such a refresh is requested or performed, treat it as a separate stale-write-sensitive operation and do not let it redefine canonical atomic-memory or authoritative project-source facts.
 
 If generated indexes remain stale because the current client cannot execute Runethread tooling, that limitation MUST be reported and future retrieval MUST use a fallback until regeneration; it does not by itself invalidate canonical memory.
 

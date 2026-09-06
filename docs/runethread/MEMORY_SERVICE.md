@@ -1,6 +1,6 @@
 # MemoryService
 
-Status: **Implemented in Runethread v0.7.0 and current in v0.8.0**
+Status: **Implemented in Runethread v0.7.0 and current in v0.9.0**
 
 MemoryService is the deterministic application boundary over a Runethread memory repository. It exists so AI clients and adapters can retrieve and mutate memory without editing canonical Markdown, JSON, generated indexes, or Git state directly.
 
@@ -47,6 +47,8 @@ fast-forward publish only if canonical branch is still expected revision
 ```
 
 Validation failure discards the isolated transaction and cannot publish a canonical commit. In-process writes through one MemoryService instance are serialized. Git revision compare-and-swap remains the correctness boundary against other processes or writers.
+
+Under contract v9, project current-state/overview prose is not part of this atomic mutation transaction. Those files are asynchronous non-authoritative orientation/materialized views; a valid atomic-memory mutation does not require synchronizing them before success can be reported.
 
 ## Idempotency and lost responses
 
@@ -105,24 +107,24 @@ The semantic caller chooses the intended operation and proposed content. Determi
 
 ## Release compatibility
 
-Runethread v0.8.0 keeps the MemoryService operation model and repository format stable while introducing contract version 8 and explicit runtime-release / contract-release separation.
+Runethread v0.9.0 keeps the MemoryService operation model, repository format, schema, Index v2, and trust-lock format stable while advancing the operational contract from version 8 to version 9.
 
 Current compatibility dimensions are:
 
 ```text
-runtime release        v0.8.0
-contract release       v0.8.0
+runtime release        v0.9.0
+contract release       v0.9.0
 repository format      2
 memory schema          1
-contract version       8
+contract version       9
 Index format           2
 trust-lock version     2
 bootstrap protocol     1
 bootstrap verifier     v0.6.0
 ```
 
-Under contract v8, `.runethread/config.json` and `.runethread/lock.json` `runethread_version` identify the immutable **contract release** rather than necessarily the runtime executable version. `runethread status` reports runtime and contract release identities separately. A future runtime-only release may operate against an unchanged v0.8 contract repository when the embedded contract identity/dimensions/digests match; that does not require repository churn.
+`.runethread/config.json` and `.runethread/lock.json` `runethread_version` identify the immutable **contract release** rather than necessarily the runtime executable version. `runethread status` reports runtime and contract release identities separately. A future runtime-only release may operate against an unchanged v0.9 contract repository when the embedded contract identity/dimensions/digests match; that does not require repository churn.
 
-The v0.8.0 CLI includes rollback-safe migration from the exact trusted native v0.6.0 and v0.7.0 contract-v7 source anchors, while retaining the deliberately narrow exact GitMemo v0.5.0 predecessor bridge. Supported migration updates managed contract/config/lock state, adds the managed root `.gitattributes` support file when appropriate, rebuilds/validates derived state, and preserves canonical memory/project bytes where the transition does not require a representation change. Unknown, mixed, tampered, newer-unknown, customized, or unsafe authoritative source states fail closed rather than being guessed or repaired.
+The v0.9.0 CLI retains exact trusted native v0.6.0/v0.7.0 contract-v7 migration support, adds an exact v0.8.0 contract-v8 historical source anchor, and retains the deliberately narrow exact GitMemo v0.5.0 predecessor bridge. The v8 -> v9 transition changes project-view authority/completion semantics and managed support/bootstrap bytes without rewriting canonical memory/project data: project current-state/overview user bytes remain preserved, the exact prior managed README/workflow are recognized, customized README bytes are preserved, and customized workflow bytes are refused rather than overwritten.
 
-The MemoryService remains transport-independent. The Phase 3 MCP adapter is expected to expose these same application operations rather than duplicate memory business logic in the transport layer.
+The MemoryService remains transport-independent. Phase 2.6 hosted delivery invokes this same deterministic boundary, and the later Phase 3 MCP adapter is expected to expose the same application operations rather than duplicate memory business logic in the transport layer.

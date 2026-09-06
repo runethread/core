@@ -213,7 +213,7 @@ schema/memory-item.schema.json
 Confirm that:
 
 - `repository_format`, `schema_version`, `contract_version`, and `runethread_version` are present in native config;
-- under contract v8, `runethread_version` is the repository's **contract-release pin**, not necessarily the version of the runtime currently executing;
+- under contract v8 and later contracts that retain this metadata field, `runethread_version` is the repository's **contract-release pin**, not necessarily the version of the runtime currently executing;
 - the lock's `source_repository` is `runethread/core`;
 - `memories/`, `projects/`, and `index/` exist;
 - `.github/workflows/validate.yml` exists when using the GitHub-hosted setup;

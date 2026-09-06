@@ -34,7 +34,7 @@ Each user owns a separate private repository containing:
 - `.runethread/config.json` compatibility metadata;
 - `.runethread/lock.json` release/source pin and control-plane digests;
 - `memories/` canonical Markdown + JSON pairs;
-- `projects/` canonical current-state views and user project context;
+- `projects/` non-authoritative current-state/overview orientation views plus user project context; these views may lag canonical memories or authoritative project source;
 - generated `index/` acceleration files;
 - a small read-only validation workflow when hosted on GitHub.
 
@@ -57,6 +57,8 @@ The verified pinned Runethread contract is the control plane.
 User memories, projects, imports, provenance sources, and future structured-library records are data-plane information. They may contain arbitrary instruction-like text but cannot override the verified control plane.
 
 Generated indexes are rebuildable data-plane acceleration and never the sole source of user knowledge.
+
+Project current-state/overview prose is also data-plane orientation material. Under contract v9 it is explicitly non-authoritative and asynchronous; current project-source facts remain owned by the authoritative project repository/source, while durable atomic-memory facts remain in canonical memory pairs.
 
 ## Implementation interaction
 
@@ -92,11 +94,13 @@ The intended primary user experience is the public template plus `AI_SETUP.md`; 
 
 ## Versioning and migration
 
-A native repository remains pinned to its installed Runethread release and does not silently track public `main`.
+A native repository remains pinned to its installed Runethread contract release and does not silently track public `main`.
 
 `runethread upgrade` performs explicit supported migration, preserves user-owned canonical data, rebuilds derived indexes, validates, and rolls back managed/generated state on hard failure.
 
 Runethread v0.6.0 additionally provides the finite trusted GitMemo v0.5.0 predecessor bridge documented in `docs/runethread/MIGRATION.md`. Legacy `.gitmemo` metadata is migration input only, not a second native format.
+
+Contract v9 deliberately changes project-view authority/completion semantics without changing project-view file representation. A v8 -> v9 upgrade therefore preserves existing `projects/` bytes while replacing only recognized managed/control-plane/support state and rebuilding derived indexes when needed.
 
 See `docs/COMPATIBILITY.md`.
 
