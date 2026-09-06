@@ -38,6 +38,8 @@ The architecture documents describe the target system. Accepted decisions govern
 | [ADR-021](ADR-021-independent-terminal-success-verification.md) | Independent verification of terminal-success mutation results | Accepted |
 | [ADR-022](ADR-022-deterministic-candidate-commit-envelope.md) | Deterministic, fully audited candidate Git commit envelope | Accepted |
 | [ADR-023](ADR-023-rollback-durable-terminal-dispositions.md) | Rollback-durable terminal operation dispositions | Accepted |
+| [ADR-024](ADR-024-deterministic-safety-journal-lineage-and-hosted-provider-tcb.md) | Deterministic safety-journal lineage and hosted provider TCB | Accepted |
+| [ADR-025](ADR-025-publication-quiescence-includes-remote-requests.md) | Publication quiescence includes remote requests | Accepted |
 
 ADR-014 amends the initial GitHub-Actions-backed implementation profile described in ADR-012/ADR-013. Their candidate-before-canonical, independent-audit, exact-revision publication, idempotency, stale-reprepare, and per-repository serialization invariants remain accepted.
 
@@ -58,6 +60,10 @@ ADR-021 closes the remaining finalizer-result bypass around ADR-020. `NO_OP` and
 ADR-022 closes the remaining exact-candidate object-envelope gap. The published commit object itself is canonical state, so author/committer identity, timestamps, headers, and reachable object closure cannot remain ambient finalizer/Git inputs once ADR-020 treats the finalizer as untrusted. Hosted candidate construction now uses a deterministic Core-owned commit envelope derived from exact `H0` + sealed request + pinned release, sanitizes Git environment/config inputs, and requires the fresh auditor to prove the raw exact commit object and exact expected `C` identity. Finalizer-supplied unreachable Git objects are not part of the authorized candidate and must not be uploaded merely because they were packaged.
 
 ADR-023 generalizes rollback-safe terminalization across the entire hosted lifecycle. Any client-visible terminal result which stops an accepted operation or releases its serialized lane position must first have a minimized immutable rollback-independent terminal-disposition record. Candidate `COMMITTED`, ADR-021 `NO_OP`/`ALREADY_COMMITTED`, `NEEDS_REPREPARE`, request-local failures, deterministic terminal audit failures, and cancellation therefore cannot be forgotten by Durable Object PITR and resurrected as live work. This adds durability to unsuccessful outcomes without adding a second semantic verifier for failures.
+
+ADR-024 freezes the concrete Phase 2.6 v1 safety-journal protocol that ADR-019 had intentionally left open. Each repository binding epoch uses one strictly sequential, exact-byte hash-linked, conditional-create journal lineage; conditional object creation is the append linearization point, and destructive recovery proves the complete tail then wins a `RECOVERY_BARRIER` before normal work can reopen. Active epochs are not compacted or routinely rotated in v1. ADR-024 also makes the hosted threat model explicit: Runethread's Cloudflare account/provider execution, secrets, Durable Object, and private evidence-store integrity/availability are inside the v1 TCB, and the architecture does not claim zero-knowledge or survival of malicious Cloudflare administrative/provider compromise. Where ADR-019 allowed multiple equivalent journal schemes, ADR-024 controls the v1 journal protocol.
+
+ADR-025 requires publication quiescence to cover delayed gateway/token issuance and every possibly admitted remote ref-update request. Executor termination and token expiry alone do not prove server completion. Enforced immutable issuance/dispatch cutoffs and rollback-independent completion evidence constrain recovery; absent proof, v1 remains in doubt without automatic retry or lane release, potentially indefinitely.
 
 ## ADR format
 
