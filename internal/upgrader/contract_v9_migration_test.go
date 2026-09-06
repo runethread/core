@@ -144,6 +144,9 @@ func contractV8Fixture(t *testing.T) string {
 	t.Helper()
 	root := filepath.Join(t.TempDir(), "memory")
 	fixtureRoot := filepath.Join("testdata", "runethread-v0.8.0")
+	if err := os.MkdirAll(root, 0o755); err != nil {
+		t.Fatal(err)
+	}
 	if err := filepath.WalkDir(fixtureRoot, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
