@@ -47,7 +47,7 @@ runethread init .
 
 `runethread init` refuses to overwrite a non-empty directory; a directory containing only `.git` is allowed.
 
-A native contract-v8 repository contains:
+A native contract-v9 repository contains:
 
 - `MEMORY_PROTOCOL.md` — mandatory operating rules;
 - `docs/USER_COMMANDS.md` — the `store/search` contract;
@@ -55,14 +55,16 @@ A native contract-v8 repository contains:
 - `docs/INDEX_FORMAT.md` — deterministic Index v2 layout;
 - `schema/` and `templates/` — memory structure;
 - `memories/` — canonical atomic memories;
-- `projects/` — concise project state views;
+- `projects/` — non-authoritative project orientation/materialized views plus user project context;
 - `index/` — generated retrieval acceleration;
 - `.runethread/config.json` — compatibility/version metadata;
 - `.runethread/lock.json` — immutable contract-release pin and control-plane digests;
 - `.gitattributes` — managed LF text policy for byte-stable Git checkouts;
-- `.github/workflows/validate.yml` — read-only trust/bootstrap validation workflow.
+- `.github/workflows/validate.yml` — read-only pull-request/manual trust/bootstrap validation workflow.
 
-Under contract v8, `runethread_version` in config/lock identifies the **contract release**. It does not have to equal the version of a newer compatible runtime executing against the repository.
+Under contract v9, `runethread_version` in config/lock identifies the **contract release**. It does not have to equal the version of a newer compatible runtime executing against the repository.
+
+Project current-state/overview files are orientation views rather than authoritative sources under contract v9. They may lag a newly committed atomic memory or authoritative project-source change. Atomic-memory completion does not require synchronizing those views; when current-state retrieval depends on them, check their freshness and fall back to canonical memories and the authoritative project source when stale, unknown, or conflicting.
 
 ## 3. Create a private remote
 
@@ -84,7 +86,7 @@ Use the AI client's official Git-provider connection/authorization UI so it can 
 
 Never paste GitHub passwords, PATs, OAuth tokens, session cookies, SSH private keys, or equivalent credentials into chat.
 
-Runethread itself does not require a hosted server and does not receive the user's memory data.
+Runethread itself does not require a hosted server and does not receive the user's memory data when used purely locally/offline. Future hosted delivery components have separate data-handling and trust boundaries documented by their release.
 
 ## 5. Use Runethread from conversations
 
@@ -132,25 +134,28 @@ runethread upgrade .
 
 A newer runtime-only release that embeds the same contract does not require running `upgrade`, rewriting `.runethread`, or committing a repository repin merely to record the runtime version.
 
-Runethread v0.8.0 / contract 8 explicitly supports exact historical native v0.6.0 and v0.7.0 contract-v7 source anchors, plus the deliberately narrow exact trusted GitMemo v0.5.0 predecessor state. Historical source state is verified before current managed files are written.
+Runethread v0.9.0 / contract 9 explicitly supports exact historical native v0.6.0 and v0.7.0 contract-v7 source anchors, exact v0.8.0 contract-v8 source state, plus the deliberately narrow exact trusted GitMemo v0.5.0 predecessor state. Historical source state is verified before current managed files are written.
+
+The v8 -> v9 migration changes operational project-view semantics and managed support/bootstrap state without changing memory schema, repository format, index format, or project-view representation. Existing project current-state/overview bytes are preserved.
 
 The current upgrader:
 
 1. detects native versus supported legacy metadata and refuses mixed state;
 2. verifies an exact supported source anchor, including managed filesystem-object safety;
-3. refuses conflicting custom managed support such as a non-matching `.gitattributes`;
-4. snapshots only managed/generated regular-file paths needed for rollback;
-5. writes current `.runethread` metadata and pinned contract release;
-6. preserves canonical `memories/`, `projects/`, and unrelated user files;
-7. rebuilds Index v2;
-8. validates the resulting repository; and
-9. restores the snapshot on a hard post-write failure.
+3. refuses conflicting custom managed support such as a non-matching `.gitattributes` or validation workflow;
+4. replaces README support prose only when the source README exactly matches a recognized prior managed Runethread/GitMemo state, preserving customized README bytes;
+5. snapshots only managed/generated regular-file paths needed for rollback;
+6. writes current `.runethread` metadata and pinned contract release;
+7. preserves canonical `memories/`, `projects/`, and unrelated user files;
+8. rebuilds Index v2;
+9. validates the resulting repository; and
+10. restores the snapshot on a hard post-write failure.
 
-A custom validation workflow or conflicting Git attributes file is not overwritten silently.
+The v9 managed GitHub validation workflow no longer runs a redundant full validation on every normal `push`; it retains pull-request and manual validation and pins retained external Actions to immutable full commit SHAs.
 
 ## 8. Filesystem-object integrity
 
-Contract v8 rejects symbolic links and unsupported special filesystem objects when they are used as repository-owned canonical/control-plane/index-source authority. Authoritative directories must be real directories and authoritative files must be regular files; traversal and volume escapes are invalid.
+Contract v8 and later contracts retain the fail-closed authoritative filesystem-object boundary. Symbolic links and unsupported special filesystem objects are rejected when they are used as repository-owned canonical/control-plane/index-source authority. Authoritative directories must be real directories and authoritative files must be regular files; traversal and volume escapes are invalid.
 
 This is separate from content hashing: a symbolic link pointing at bytes that happen to match a trusted file is still not a valid authoritative repository object.
 

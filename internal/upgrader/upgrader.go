@@ -412,14 +412,14 @@ func desiredManagedFiles(root string, kind sourceKind) (map[string][]byte, error
 }
 
 func updateReadme(data []byte, kind sourceKind) []byte {
-	text := string(data)
+	digest := sha256Hex(data)
 	switch kind {
 	case sourceLegacyV050:
-		if strings.HasPrefix(text, "# GitMemo Memory\n") && strings.Contains(text, ".gitmemo/lock.json") {
+		if digest == legacyManagedReadmeV050SHA256 {
 			return starter.MemoryRepoReadme()
 		}
 	case sourceNative:
-		if strings.HasPrefix(text, "# Runethread Memory\n") && strings.Contains(text, ".runethread/lock.json") {
+		if bytes.Equal(data, starter.MemoryRepoReadme()) || digest == nativeManagedReadmeV060V080SHA256 {
 			return starter.MemoryRepoReadme()
 		}
 	}
@@ -462,7 +462,7 @@ func checkWorkflowOwnership(root string, kind sourceKind) error {
 	}
 	switch kind {
 	case sourceNative:
-		if bytes.Equal(data, starter.ValidationWorkflow()) {
+		if bytes.Equal(data, starter.ValidationWorkflow()) || sha256Hex(data) == nativeManagedWorkflowV060V080SHA256 {
 			return nil
 		}
 	case sourceLegacyV050:

@@ -13,7 +13,9 @@ import (
 const (
 	nativeV060ReleaseVersion = "v0.6.0"
 	nativeV070ReleaseVersion = "v0.7.0"
+	nativeV080ReleaseVersion = "v0.8.0"
 	nativeContractV7SHA256   = "5b245c55e640555c797c3f86f02b54a431da40e959bdd466f90c0c5c88c45766"
+	nativeContractV8SHA256   = "1deef7fdc49d50b7ae6b54566de6c00ad78609c5a089ed0de254e38490853d5c"
 )
 
 type nativeSourceAnchor struct {
@@ -49,6 +51,28 @@ var nativeContractV7Files = map[string]string{
 	"templates/state.md":             "a83248bd386bbbebec16525be3f687be995bc33b697845a864cd5214baf8c6ce",
 }
 
+var nativeContractV8Files = map[string]string{
+	"MEMORY_PROTOCOL.md":             "32a489441e9838dfbb2cafe9af7b6842e35081f07bdc535e3d5873c27ff30d3c",
+	"docs/EXTENDING_RUNETHREAD.md":   "842a8e9efbc340af52f01b240f2b1c4bd09457354c5de4f33dfbf657cb8acfce",
+	"docs/INDEX_FORMAT.md":           "dadcdaaf3cdf36bf61fdb7dc3f8105661b5e742dda6da4cb64fc1b8d07f3ee91",
+	"docs/MEMORY_CONTENT_FORMAT.md":  "d4460812373bdc6448fbb840012820197145f3384008016c749f8b9960a46745",
+	"docs/MEMORY_SCHEMA.md":          "42736c5a46fa7f3d81c16d4680f576e51bf694f74655d7ee63a410af6aaa8452",
+	"docs/REPOSITORY_VALIDATION.md":  "ce0ae626372424a0ae5a9c3c47a304880ed3e64d8de822181fcadbf296d70b01",
+	"docs/SOURCES.md":                "93752501cee548a5b3c4863f57190af9dd7c96a026c94b9a54d62bb62840c8d6",
+	"docs/TAXONOMY.md":               "69fd1b23366163a2646ec4b8eaf73079a7f48aa7b94d8db283b6fdf5ebe30173",
+	"docs/TRUST_MODEL.md":            "8fe62d4d35a6b40af82c0692fbb9818399f22cb2da708add25ee372313185039",
+	"docs/USER_COMMANDS.md":          "fc65b96d58fbb9d4de5a8325c3fe287185ff33ddc32d9223dcb449ea655fecba",
+	"schema/memory-item.schema.json": "b4d03cb3fa85e95c98275701ffb44c4a14088bcf0b41cfb6a9dc5a092ab3b69a",
+	"templates/correction.md":        "400a57ac853a3e28381235094401fadeebba1bc3e18745295e85e267b080dfc6",
+	"templates/decision.md":          "facbf0490a5e138f43a73636a8b8341764bc055d1df03907ed30ebaa04d8038b",
+	"templates/fact.md":              "d3d03a2277654875677eb9641f7073beb11e1072f78244135018dc6cdc05c226",
+	"templates/milestone.md":         "8c54066877448dc1fea9277bdfb65ed4cb6e51197ad328e52f9215f7c0e96061",
+	"templates/open_loop.md":         "35c7a3091de80a0e2258ae33dd72b51390fbbfd92aebe0be55e65a9e04ef1f8d",
+	"templates/preference.md":        "f909733d2efd7994a92427328bbe6ba700ca500f358cbae342c357577f81cb63",
+	"templates/reference.md":         "9dade8d57fa99a1e3ae156ad6e7677cc06b246f0cd57bcb6ce9de71a346ee307",
+	"templates/state.md":             "a83248bd386bbbebec16525be3f687be995bc33b697845a864cd5214baf8c6ce",
+}
+
 func nativeSourceAnchorFor(release string) (nativeSourceAnchor, bool) {
 	switch release {
 	case nativeV060ReleaseVersion, nativeV070ReleaseVersion:
@@ -61,6 +85,17 @@ func nativeSourceAnchorFor(release string) (nativeSourceAnchor, bool) {
 			SourceRepository: "runethread/core",
 			ContractSHA256:   nativeContractV7SHA256,
 			FilesSHA256:      nativeContractV7Files,
+		}, true
+	case nativeV080ReleaseVersion:
+		return nativeSourceAnchor{
+			ReleaseVersion:   release,
+			RepositoryFormat: 2,
+			SchemaVersion:    1,
+			ContractVersion:  8,
+			LockVersion:      2,
+			SourceRepository: "runethread/core",
+			ContractSHA256:   nativeContractV8SHA256,
+			FilesSHA256:      nativeContractV8Files,
 		}, true
 	default:
 		return nativeSourceAnchor{}, false

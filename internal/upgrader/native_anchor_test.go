@@ -14,7 +14,7 @@ import (
 )
 
 func TestNativeSourceAnchorsMatchFrozenPublishedMetadata(t *testing.T) {
-	for _, release := range []string{nativeV060ReleaseVersion, nativeV070ReleaseVersion} {
+	for _, release := range []string{nativeV060ReleaseVersion, nativeV070ReleaseVersion, nativeV080ReleaseVersion} {
 		t.Run(release, func(t *testing.T) {
 			lockPath := filepath.Join("testdata", "runethread-"+release, ".runethread", "lock.json")
 			data, err := os.ReadFile(lockPath)

@@ -14,9 +14,9 @@ import (
 	"github.com/runethread/core/internal/trust"
 )
 
-func TestContractV8MigratesFrozenNativeSourcesWithoutChangingCanonicalData(t *testing.T) {
+func TestCurrentContractMigratesFrozenContractV7SourcesWithoutChangingCanonicalData(t *testing.T) {
 	if buildinfo.ContractVersion < 8 {
-		t.Skip("contract-v8 migration proof activates with contract version 8")
+		t.Skip("frozen native contract migration proof activates with contract version 8")
 	}
 
 	for _, release := range []string{nativeV060ReleaseVersion, nativeV070ReleaseVersion} {
@@ -37,8 +37,8 @@ func TestContractV8MigratesFrozenNativeSourcesWithoutChangingCanonicalData(t *te
 			if err != nil {
 				t.Fatal(err)
 			}
-			if result.FromVersion != release || result.ToVersion != buildinfo.ContractReleaseVersion || result.FromContract != 7 || result.ToContract != 8 {
-				t.Fatalf("unexpected contract-v8 migration result: %#v", result)
+			if result.FromVersion != release || result.ToVersion != buildinfo.ContractReleaseVersion || result.FromContract != 7 || result.ToContract != buildinfo.ContractVersion {
+				t.Fatalf("unexpected contract migration result: %#v", result)
 			}
 			if result.AlreadyCurrent {
 				t.Fatal("historical native source incorrectly reported as current")
@@ -46,6 +46,7 @@ func TestContractV8MigratesFrozenNativeSourcesWithoutChangingCanonicalData(t *te
 
 			wantChanged := []string{
 				".gitattributes",
+				".github/workflows/validate.yml",
 				".runethread/config.json",
 				".runethread/lock.json",
 				"MEMORY_PROTOCOL.md",
@@ -56,7 +57,7 @@ func TestContractV8MigratesFrozenNativeSourcesWithoutChangingCanonicalData(t *te
 			gotChanged := append([]string(nil), result.ChangedPaths...)
 			sort.Strings(gotChanged)
 			if !reflect.DeepEqual(gotChanged, wantChanged) {
-				t.Fatalf("contract-v8 changed paths = %v, want %v", gotChanged, wantChanged)
+				t.Fatalf("contract migration changed paths = %v, want %v", gotChanged, wantChanged)
 			}
 
 			if got := mustRead(t, memoryJSON); !bytes.Equal(got, beforeJSON) {

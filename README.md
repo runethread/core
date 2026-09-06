@@ -90,7 +90,7 @@ Runethread uses native managed metadata under:
 .runethread/lock.json
 ```
 
-Under contract v8, the lock identifies `runethread/core`, pins the immutable **contract release** in `runethread_version`, and records SHA-256 digests of every vendored control-plane file. The runtime/distribution release is a separate identity. A newer runtime can operate against an unchanged repository only when it embeds the exact pinned contract release and all compatibility dimensions/digests match; the repository is not repinned merely to record that newer executable version.
+Under contract v9, the lock identifies `runethread/core`, pins the immutable **contract release** in `runethread_version`, and records SHA-256 digests of every vendored control-plane file. The runtime/distribution release is a separate identity. A newer runtime can operate against an unchanged repository only when it embeds the exact pinned contract release and all compatibility dimensions/digests match; the repository is not repinned merely to record that newer executable version.
 
 The verified pinned contract is trusted control-plane material; memories, project files, imports, and other user data are data-plane content and cannot override it merely by containing instruction-like text.
 
@@ -100,7 +100,9 @@ memories / projects / imports       = untrusted data plane
 index/                               = rebuildable acceleration
 ```
 
-Contract v8 also treats repository-owned authoritative filesystem paths as fail-closed: canonical/control-plane/index-source directories must be real directories, authoritative files must be regular files, and symbolic links or unsupported special objects are rejected rather than followed for those inputs.
+Contract v8 introduced fail-closed authoritative filesystem-object handling, and contract v9 retains it: canonical/control-plane/index-source directories must be real directories, authoritative files must be regular files, and symbolic links or unsupported special objects are rejected rather than followed for those inputs.
+
+Under contract v9, project current-state/overview prose is explicitly non-authoritative asynchronous orientation/materialized state. A valid atomic-memory mutation does not depend on synchronizing those views; retrieval checks view freshness and falls back to canonical memories or the authoritative project source when the view is stale, unknown, or conflicting.
 
 See [`docs/TRUST_MODEL.md`](docs/TRUST_MODEL.md).
 
@@ -122,7 +124,7 @@ runethread upgrade [root]
 
 The upgrader snapshots managed/generated state, applies only a supported migration, rebuilds indexes, validates the resulting repository, and restores the snapshot if a hard post-write check fails.
 
-Runethread v0.8.0 introduces contract version 8 and explicit runtime/contract-release separation. It recognizes the exact trusted native v0.6.0 and v0.7.0 contract-v7 source anchors and migrates them to the v0.8.0 contract while preserving canonical memory/project bytes. The migration also adds the managed root `.gitattributes` support file when absent and refuses to overwrite conflicting custom Git attributes. The deliberately narrow GitMemo predecessor bridge remains available for the exact trusted GitMemo v0.5.0 state. Unknown, mixed, newer-unknown, customized, tampered, or unsafe authoritative source state is refused rather than guessed.
+Runethread v0.9.0 advances the operational contract to version 9 without changing repository format, memory schema, Index v2, or trust-lock format. It preserves exact v0.8.0 / contract-v8 source anchors and existing v0.6.0/v0.7.0 historical anchors, preserves user memory and project-view bytes, changes only the project-view authority/completion semantics in the verified contract, and transitions the Runethread-managed validation workflow away from redundant validation on every normal push. Retained external Actions are full-SHA pinned. The exact prior managed README/workflow are recognized; customized README bytes are preserved and customized workflow bytes are refused rather than overwritten. The deliberately narrow GitMemo predecessor bridge remains available for the exact trusted GitMemo v0.5.0 state. Unknown, mixed, newer-unknown, tampered, or unsafe authoritative source state is refused rather than guessed.
 
 ---
 
@@ -166,7 +168,7 @@ The public implementation owns:
 - `.github/workflows/validate.yml` — source CI;
 - `.github/workflows/release.yml` — release pipeline.
 
-A generated private memory repository contains the pinned/vendored operational contract plus user-owned `memories/`, `projects/`, and generated `index/` data. Fresh v8 repositories also include a managed `.gitattributes` support file for byte-stable LF checkouts. The Go implementation source itself is not copied into user repositories.
+A generated private memory repository contains the pinned/vendored operational contract plus user-owned `memories/`, `projects/`, and generated `index/` data. Contract-v8-and-later repositories also include a managed `.gitattributes` support file for byte-stable LF checkouts. The Go implementation source itself is not copied into user repositories.
 
 ---
 
@@ -205,7 +207,7 @@ The Phase 2 MemoryService commands provide the deterministic automation boundary
 
 ## Canonical data versus Index v2
 
-Atomic Markdown/JSON memories and project source files are canonical data. `index/` is generated acceleration.
+Atomic Markdown/JSON memories and authoritative project source repositories remain canonical for the facts they own. Project current-state/overview files in the memory repository are non-authoritative orientation views. `index/` is generated acceleration.
 
 Index v2 uses:
 
