@@ -438,13 +438,13 @@ A deliberate stop is a successful safety outcome, not a failure of progress.
 
 ## 20. Current Phase 2.6 application
 
-Phase 2.5 compatibility hardening is complete. The subsequent ADR-015 contract transition is also complete: Runethread v0.9.0 / contract v9 is the current immutable release, `runethread/memory-template` is migrated and validated at v0.9.0, and the known private memory repository is migrated and validated at v0.9.0 with the intended five managed paths changed and user-owned memory/project/index bytes preserved. ADR-012 through ADR-024 are accepted.
+Phase 2.5 compatibility hardening is complete. The subsequent ADR-015 contract transition is also complete: Runethread v0.9.0 / contract v9 is the current immutable release, `runethread/memory-template` is migrated and validated at v0.9.0, and the known private memory repository is migrated and validated at v0.9.0 with the intended five managed paths changed and user-owned memory/project/index bytes preserved. ADR-012 through ADR-025 are accepted.
 
 Phase 2.6 Memory Write Delivery Pipeline is the current milestone. Phase 3 MCP implementation is blocked until Phase 2.6 satisfies issue #20.
 
 For Phase 2.6 work:
 
-- start from freshly verified `main` and ADR-012/ADR-013 invariants as amended/qualified by ADR-014 through ADR-024;
+- start from freshly verified `main` and ADR-012/ADR-013 invariants as amended/qualified by ADR-014 through ADR-025;
 - treat contract v9 as the completed normal hosted-write compatibility floor. Normal hosted mutation admission MUST reject contract-v8 repositories rather than silently omitting v8-required project current-state synchronization; supported v8 repositories may be inspected/reconciled and upgraded through the released path;
 - treat the Runethread-managed v9 memory-repository validation workflow transition as completed downstream state: normal hosted canonical pushes no longer trigger redundant full validation, every retained external `uses:` Action is pinned to a verified full-length commit SHA, exact prior managed workflow recognition remains the supported migration source, and customized/unrecognized workflow state is not silently overwritten;
 - treat generated/current v9 support prose alignment as completed migration state: project current-state/overview prose is an orientation/materialized view rather than a canonical source, project-view user bytes remain preserved, and automatic README replacement is limited to exact recognized prior managed README state rather than a broad heading/lock heuristic;
@@ -492,7 +492,7 @@ For Phase 2.6 work:
 - keep the long-lived App private key in the gateway Worker and, only after durable `PUBLISHING` plus publication-intent safety evidence, mint a short-lived one-repository minimum Contents-write installation token to a minimal trusted publisher executor/Container when the fallback path is used;
 - publisher executor imports only the verified object closure needed for exact audited C relative to H0, performs no source clone/semantic mutation/repair/audit, ignores/rejects unrelated unreachable package objects, performs at most one exact bound-ref `H0 -> C` Git-protocol push for its publisher-attempt identity, never constructs `C2`, and has no autonomous retry loop;
 - require a real expected-old ref update. GitHub REST `Update a reference` with `force=false` is not exact expected-old CAS; current GraphQL `updateRefs` documents `beforeOid`/`afterOid`, so the delegated API prototype should test exact candidate-object identity and GitHub App permission behavior before unnecessary publisher machinery is committed. Until that proof exists, the exact Git-protocol publisher is the accepted safe fallback;
-- treat `PUBLISHING` as capability-bearing/in-doubt: the lane cannot be released, a later publication cannot start, and the publication generation cannot be abandoned/reused while an issued executor/token may still act; clean completion must satisfy executor termination/token-disposal policy, while ambiguous loss requires executor stop/destroy and conservative wait for any unconfirmed token expiry before resolution/retry;
+- treat `PUBLISHING` as capability-bearing/in-doubt under ADR-025: fence future issuance/dispatch with enforced immutable cutoffs and prove completion/non-effect of every possibly admitted remote update before terminalization/lane release/retry. Executor destruction, token expiry/revocation, a current-ref read, or the R2 recovery barrier alone cannot prove remote completion; without proof remain closed, potentially indefinitely;
 - after fencing, classify the publication result conservatively as proven-not-published, proven-published, or indeterminate. Lost response, timeout, process loss, or current `ref != C` alone is never proof that C was not published;
 - keep every proven or possibly published exact C as a protected history anchor. A definitive success is a durable committed fact even if a later owner rewrite removes C from current ancestry;
 - a candidate operation is not exposed as durable `COMMITTED` merely because C is possibly published: exact C must be positively proven published under ADR-018 and that positive evidence plus exact `COMMITTED(C)` result must be bound into ADR-023 rollback-independent terminal disposition before client-visible success/lane release;
@@ -508,6 +508,8 @@ For Phase 2.6 work:
 - enforce explicit resource/private-data/log/retention limits and threat-model hosted plaintext processing plus minimized safety-journal retention/deletion;
 - after contract-v9 migration, keep project orientation/current-state prose outside atomic memory dual-write transaction;
 - measure acquisition/bytes/idempotency-stale/finalization/deterministic-candidate/package/request-conformance+commit-envelope-audit/terminal-success-verification/terminal-disposition/publication/publisher-or-API-path/fencing/journal-recovery/alarm/interleaving/provider startup latency and cost separately.
+
+ADR-025 requires publication quiescence to cover delayed gateway/token issuance and every possibly admitted remote ref-update request. Executor termination and token expiry alone do not prove server completion. Enforced immutable issuance/dispatch cutoffs and rollback-independent completion evidence constrain recovery; absent proof, v1 remains in doubt without automatic retry or lane release, potentially indefinitely.
 
 ### Phase 2.6 architecture-freeze gate
 
@@ -537,7 +539,9 @@ After the v0.9 rollout completed, an independent engineering audit challenged tw
 
 **ADR-024 therefore reopens the architecture freeze.** The previous zero-edit result remains valid evidence about the older exact head but cannot authorize journal-dependent hosted implementation against the amended architecture. No new attack review is started as part of the ADR-024 amendment housekeeping. Implementation remains blocked until a fresh full adversarial review of the exact synchronized planning head containing ADR-024 itself requires zero architecture/planning edits.
 
-Prototype questions may remain only when an accepted invariant-preserving fallback already exists and architecture does not depend on guessing the outcome. The current GraphQL expected-old ref path is such a delegated prototype because the exact Git-protocol publisher remains a safe fallback until exact candidate-object identity and App-permission behavior are proven by integration tests.
+The full review of exact head `967446acd8ab45f6d052d6405d4c2c65f5d69b0b` against base `7f5cf86f23604426c7e8f69086fdcbe27fb86226` completed before corrections and found two required changes: publication fencing omitted already-admitted remote requests/delayed issuance (ADR-025), and ROADMAP.md/issue #20 retained contradictory current-work instructions. That review failed the zero-edit gate. These corrections require a fresh full review of the new synchronized head; the exact result is recorded on PR #26 without editing a passing head merely to record its pass.
+
+Prototype questions may remain only when an accepted invariant-preserving fallback already exists and architecture does not depend on guessing the outcome. The current GraphQL expected-old ref path is such a delegated prototype because the exact Git-protocol publisher remains the expected-old/exact-object fallback until exact candidate-object identity and App-permission behavior are proven by integration tests; unresolved remote completion follows ADR-025 and carries no bounded automatic-recovery promise.
 
 Installing or materially changing hosted Phase 2.6 itself is a control-plane barrier and uses full Core/hosted release/downstream process.
 
