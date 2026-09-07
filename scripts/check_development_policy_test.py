@@ -214,7 +214,9 @@ def test_moving_action_tag_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / ".github/workflows/validate.yml"
-        replace_once(path, "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@v7")
+        marker = "        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\n        with:\n          fetch-depth: 0"
+        replacement = "        uses: actions/checkout@v7\n        with:\n          fetch-depth: 0"
+        replace_once(path, marker, replacement)
         require_error(root, "immutable 40-hex commit SHA")
     finally:
         shutil.rmtree(root)
