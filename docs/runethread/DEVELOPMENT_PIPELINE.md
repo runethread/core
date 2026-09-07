@@ -140,7 +140,7 @@ The repository MUST retain:
 - `.github/CODEOWNERS` covering safety-critical policy/workflow/trust/migration/licensing surfaces;
 - `AGENTS.md` and the engineering/pipeline policy documents;
 - `LICENSE`, `LICENSE-MIT`, `LICENSING.md`, and ADR-026 as the protected licensing/rightsholder authority surface;
-- the PR impact guard and development-policy guard with self-tests that fail when mandatory licensing-policy markers drift.
+- the PR impact guard and development-policy guard with self-tests that byte-lock the standardized `LICENSE` and `LICENSE-MIT` texts, fail when mandatory licensing-policy markers drift, and fail if the temporary post-v0.9.0 mixed-license release block is bypassed.
 
 `go mod verify` checks module content integrity. Dependabot provides update discovery. A vulnerability scanner is added only when its pinned version/update policy is deliberately owned; it is not substituted with an unpinned network-installed tool. Before MCP or another dependency-bearing phase, explicitly re-evaluate vulnerability scanning and the observed GitHub dependency graph.
 
@@ -187,9 +187,9 @@ Do not begin release, template migration, private-memory migration, or the next 
 
 When a change requires a release or downstream migration, follow the dedicated release/template/private-repository gates in `ENGINEERING_PROCESS.md`.
 
-ADR-026 creates an additional post-transition release condition: **no Core release containing Perimeter-covered implementation may be requested or published until the packaging path has been deliberately updated and verified to provide the applicable PolyForm Perimeter terms or URL plus every required `Required Notice:` with each covered binary/artifact distribution.** Existing MIT-era releases remain immutable historical artifacts.
+ADR-026 creates an additional post-transition release condition: Core binaries embed MIT-covered `ContractFS` material, so a post-transition Core binary is a **mixed-license distribution**. **No post-transition Core release may be requested or published until the packaging path has been deliberately updated and verified to provide both (1) the applicable PolyForm Perimeter terms or URL plus every `Required Notice:` for Perimeter-covered implementation and (2) the MIT license/copyright notice for embedded or otherwise distributed interoperability material.** Until that reviewed packaging change exists, `.github/workflows/release.yml` MUST fail closed for every requested version other than the already-published v0.9.0 baseline. The future packaging PR must deliberately replace that gate and update the development-policy guard/self-tests in the same review.
 
-A development-pipeline or licensing change does not implicitly authorize modifications to the managed memory-repository bootstrap, starter-generated files, trust contract, template, or private memory repository. Those surfaces must be explicitly classified and versioned/migrated when required. Any managed-file licensing/notice change must preserve ADR-026's MIT interoperability boundary and must never imply a license grant over user-authored data.
+Existing MIT-era releases remain immutable historical artifacts. A development-pipeline or licensing change does not implicitly authorize modifications to the managed memory-repository bootstrap, starter-generated files, trust contract, template, or private memory repository. Those surfaces must be explicitly classified and versioned/migrated when required. Future template/generated-user-repository distributions of MIT interoperability material must make the MIT license/copyright notice available for the managed files through the normal contract/bootstrap/release/downstream process and must never imply a license grant over user-authored data.
 
 ---
 
