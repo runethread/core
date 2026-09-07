@@ -12,12 +12,12 @@ Automated agents, AI assistants, scripts that modify source, and human maintaine
 
 Before the first substantive write:
 
-1. read `AGENTS.md`, `docs/runethread/ENGINEERING_PROCESS.md`, this document, `docs/runethread/CURRENT_MILESTONE.md`, and the relevant accepted ADRs/normative files;
+1. read `AGENTS.md`, `docs/runethread/ENGINEERING_PROCESS.md`, this document, `docs/runethread/CURRENT_MILESTONE.md`, `LICENSING.md`, and the relevant accepted ADRs/normative files;
 2. freshly verify exact `main` SHA and intended branch/base SHA;
 3. verify the current release/version dimensions and relevant historical fixtures when compatibility may be affected;
 4. verify the active required-status/ruleset surface;
 5. read the implementation and tests that actually own the behavior;
-6. classify every relevant impact surface before editing.
+6. classify every relevant impact surface, including licensing/rightsholder/notice/inbound-rights impact, before editing.
 
 Remembered conversation state is orientation, never proof. If live state contradicts the plan, stop writes and resolve the discrepancy first.
 
@@ -25,11 +25,11 @@ Remembered conversation state is orientation, never proof. If live state contrad
 
 ## 2. Mandatory semantic scope boundary
 
-Before implementation, distinguish **development infrastructure** from **product semantics**.
+Before implementation, distinguish **development infrastructure** from **product/governance semantics**.
 
-Development-infrastructure changes include repository CI, formatting gates, dependency-maintenance configuration, ownership metadata, and agent/process policy. Product-semantic changes include anything that changes accepted/rejected repository state, canonical bytes or layout, trust rules, runtime/API/CLI behavior, bootstrap output, starter-generated files, migration behavior, schema/contract semantics, or downstream repository requirements.
+Development-infrastructure changes include repository CI, formatting gates, dependency-maintenance configuration, ownership metadata, and agent/process policy. Product/governance-semantic changes include anything that changes accepted/rejected repository state, canonical bytes or layout, trust rules, runtime/API/CLI behavior, bootstrap output, starter-generated files, migration behavior, schema/contract semantics, downstream repository requirements, licensing/rightsholder scope, commercial-use boundaries, required notices, or inbound contribution rights.
 
-A change discovered while hardening CI does not become "CI-only" merely because CI exposed it. If the proposed fix changes a product promise or repository acceptance rule, reclassify it and apply the contract/version/migration gates from `ENGINEERING_PROCESS.md`.
+A change discovered while hardening CI does not become "CI-only" merely because CI exposed it. If the proposed fix changes a product promise, repository acceptance rule, or licensing/rights boundary, reclassify it and apply the relevant contract/version/migration and licensing/rights gates from `ENGINEERING_PROCESS.md`.
 
 When scope becomes mixed or materially different from the branch purpose:
 
@@ -137,9 +137,10 @@ The repository MUST retain:
 
 - `.gitattributes` for byte-stable Core text checkout;
 - `.github/dependabot.yml` covering Go modules and GitHub Actions;
-- `.github/CODEOWNERS` covering safety-critical policy/workflow/trust/migration surfaces;
+- `.github/CODEOWNERS` covering safety-critical policy/workflow/trust/migration/licensing surfaces;
 - `AGENTS.md` and the engineering/pipeline policy documents;
-- the PR impact guard and development-policy guard with self-tests.
+- `LICENSE`, `LICENSE-MIT`, `LICENSING.md`, and ADR-026 as the protected licensing/rightsholder authority surface;
+- the PR impact guard and development-policy guard with self-tests that fail when mandatory licensing-policy markers drift.
 
 `go mod verify` checks module content integrity. Dependabot provides update discovery. A vulnerability scanner is added only when its pinned version/update policy is deliberately owned; it is not substituted with an unpinned network-installed tool. Before MCP or another dependency-bearing phase, explicitly re-evaluate vulnerability scanning and the observed GitHub dependency graph.
 
@@ -155,10 +156,11 @@ Before readiness:
 2. inspect the canonical GitHub changed-file list and patch;
 3. confirm every changed file belongs to the declared change class/scope;
 4. run the PR-specific impact/version guard;
-5. require the exact PR head to pass Linux quality, macOS, Windows, and the aggregate `validate` check;
-6. inspect comments, reviews, and review threads;
-7. verify the base has not moved unexpectedly;
-8. repeat backward/forward/negative/cross-surface review against the actual final diff.
+5. for licensing/rightsholder/commercial-policy changes, apply the **Licensing / rights gate** in `ENGINEERING_PROCESS.md` and the PR template against the exact changed material, historical grants, contributor rights, user-data boundary, and distribution notices;
+6. require the exact PR head to pass Linux quality, macOS, Windows, and the aggregate `validate` check;
+7. inspect comments, reviews, and review threads;
+8. verify the base has not moved unexpectedly;
+9. repeat backward/forward/negative/cross-surface review against the actual final diff.
 
 An unexplained file or invalidated premise is a stop condition, even if CI is green.
 
@@ -174,7 +176,7 @@ After merge, independently verify:
 - `main` points to the intended merge/squash commit;
 - merged-main CI passes, including aggregate `validate`;
 - required workflow/check names still match the active repository ruleset;
-- critical policy/runtime files contain the reviewed content;
+- critical policy/runtime/licensing files contain the reviewed content;
 - dependency-maintenance/ownership files remain present.
 
 Do not begin release, template migration, private-memory migration, or the next architectural phase before post-merge verification passes.
@@ -185,7 +187,9 @@ Do not begin release, template migration, private-memory migration, or the next 
 
 When a change requires a release or downstream migration, follow the dedicated release/template/private-repository gates in `ENGINEERING_PROCESS.md`.
 
-A development-pipeline change does not implicitly authorize modifications to the managed memory-repository bootstrap, starter-generated files, trust contract, template, or private memory repository. Those surfaces must be explicitly classified and versioned/migrated when required.
+ADR-026 creates an additional post-transition release condition: **no Core release containing Perimeter-covered implementation may be requested or published until the packaging path has been deliberately updated and verified to provide the applicable PolyForm Perimeter terms or URL plus every required `Required Notice:` with each covered binary/artifact distribution.** Existing MIT-era releases remain immutable historical artifacts.
+
+A development-pipeline or licensing change does not implicitly authorize modifications to the managed memory-repository bootstrap, starter-generated files, trust contract, template, or private memory repository. Those surfaces must be explicitly classified and versioned/migrated when required. Any managed-file licensing/notice change must preserve ADR-026's MIT interoperability boundary and must never imply a license grant over user-authored data.
 
 ---
 
@@ -196,7 +200,7 @@ When any gate fails:
 1. stop stacking unrelated writes;
 2. tie the failure to its exact SHA/job/log;
 3. diagnose from evidence rather than guess;
-4. distinguish product defect, process defect, test defect, harness defect, stale assumption, and external/tool failure;
+4. distinguish product defect, process defect, test defect, harness defect, stale assumption, licensing/rights defect, and external/tool failure;
 5. apply the smallest correct fix at the owning layer;
 6. rerun the broader pipeline on the new exact head;
 7. improve the guard/test when the failure class should have been detected earlier.
@@ -211,6 +215,7 @@ Future agents extending Runethread MUST treat these files as project-native auth
 
 ```text
 AGENTS.md
+LICENSING.md
 docs/runethread/ENGINEERING_PROCESS.md
 docs/runethread/DEVELOPMENT_PIPELINE.md
 docs/runethread/CURRENT_MILESTONE.md
@@ -218,4 +223,4 @@ docs/runethread/CURRENT_MILESTONE.md
 
 They MUST re-read them from the live repository before substantive changes. Project policy must not exist only in chat history, personal memory, or an agent scratchpad.
 
-If an agent cannot prove compliance with a mandatory gate, it must report the uncertainty and stop rather than silently substituting a weaker process.
+If an agent cannot prove compliance with a mandatory gate, including a licensing/rightsholder/required-notice gate, it must report the uncertainty and stop rather than silently substituting a weaker process.
