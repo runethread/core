@@ -254,8 +254,9 @@ def test_licensing_policy_cannot_hide_branch_boundary() -> None:
     root = copy_repo_surface()
     try:
         path = root / "LICENSING.md"
-        replace_once(path, "4bd5279a91ca894f6ccb13db91360f6ba95b6576", "0000000000000000000000000000000000000000")
-        require_error(root, "4bd5279a91ca894f6ccb13db91360f6ba95b6576")
+        marker = "first public development-branch snapshot whose root license is Perimeter"
+        replace_once(path, marker, "development-branch licensing history is unspecified")
+        require_error(root, marker)
     finally:
         shutil.rmtree(root)
 
