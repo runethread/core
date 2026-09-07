@@ -43,6 +43,21 @@ jobs:
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Enforce ADR-026 license packaging gate
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          # v0.9.0 is the immutable MIT-era baseline. Any later Core release is
+          # blocked until a separately reviewed packaging change distributes:
+          #   1. PolyForm Perimeter terms/URL + Required Notice for implementation; and
+          #   2. the MIT license/copyright notice for embedded/exported interoperability material.
+          # That future packaging PR must deliberately replace this gate and update
+          # the development-policy guard/self-tests at the same time.
+          if [ "$VERSION" != "v0.9.0" ]; then
+            echo "ADR-026 blocks post-v0.9.0 release publication until mixed-license packaging is implemented and verified" >&2
+            exit 1
+          fi
+
       - name: Detect an already-published identical release
         id: existing
         env:
