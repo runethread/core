@@ -437,7 +437,7 @@ def test_invalid_utf8_cannot_hide_licensing_text_fails() -> None:
     try:
         path = root / "notes" / "opaque.txt"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(b"\xff\xfeR\x00u\x00n\x00e\x00t\x00h\x00r\x00e\x00a\x00d\x00")
+        path.write_bytes(b"\xff\xfeopaque")
         require_error(root, "not valid UTF-8 and has no binary exception")
     finally:
         shutil.rmtree(root)
