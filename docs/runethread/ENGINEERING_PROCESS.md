@@ -333,7 +333,7 @@ Before any change that affects license files, rightsholder identity, commercial-
 7. verify every distribution path carries the terms/URL and required notices applicable to its covered artifacts;
 8. if rightsholder scope is unresolved, stop rather than publishing or making an unsupported license claim.
 
-No post-transition Core release containing Perimeter-covered implementation may be requested or published until its packaging path is updated and verified to provide the PolyForm Perimeter terms or URL plus every applicable `Required Notice:` with each covered binary/artifact distribution.
+Core binaries embed MIT-covered `ContractFS` interoperability material. A post-transition Core binary is therefore a mixed-license distribution. No post-transition Core release may be requested or published until packaging is updated and verified to provide both the PolyForm Perimeter terms or URL plus every applicable `Required Notice:` for implementation **and** the MIT license/copyright notice for embedded or otherwise distributed interoperability material. Until that separately reviewed packaging change lands, the release workflow must fail closed for every requested version other than the already-published v0.9.0 baseline, and removing that block requires a coordinated guard/self-test update.
 
 ---
 
@@ -399,7 +399,7 @@ Before publication:
 - all intended platform binaries build;
 - checksum set is complete;
 - draft release target matches exact release commit;
-- applicable license terms/URL and required notices are included with every covered artifact; for a post-ADR-026 Perimeter-covered Core release this condition is mandatory before a release request may advance.
+- every covered artifact carries the license material applicable to what it contains; a post-ADR-026 Core binary requires Perimeter terms/URL + every `Required Notice:` for implementation and the MIT license/copyright notice for embedded `ContractFS` interoperability material before a release request may advance.
 
 After publication, independently verify:
 
@@ -408,7 +408,7 @@ After publication, independently verify:
 - immutable/non-draft status;
 - expected asset names/count;
 - checksums/artifacts when practical;
-- applicable license/notice artifacts are actually present and correspond to the released licensing state.
+- applicable Perimeter and/or MIT license/notice artifacts are actually present and correspond to the released material.
 
 Downstream template/private migrations start only after the immutable release is independently verified.
 
@@ -429,7 +429,7 @@ For changes requiring repository migration:
 
 For canonical-data-preserving metadata migrations, use Git tree/blob identity where possible as an independent byte-preservation proof.
 
-Managed-file license/notice changes are not permission to license the repository as a whole. Preserve ADR-026's MIT interoperability boundary and explicitly keep user-authored data outside Runethread's software-license grant.
+Managed-file license/notice changes are not permission to license the repository as a whole. Preserve ADR-026's MIT interoperability boundary and explicitly keep user-authored data outside Runethread's software-license grant. Any future template/generated-user-repository distribution of MIT interoperability material must make the MIT license/copyright notice available for those managed files through the normal contract/bootstrap/release/downstream path; ADR-026 does not authorize opportunistic edits to current v0.9 user repositories merely to add notice files.
 
 ---
 
@@ -494,7 +494,7 @@ Before hosted runtime implementation proceeds, the pre-implementation sequence i
 For Phase 2.6 work:
 
 - start from freshly verified `main` and ADR-012/ADR-013 invariants as amended/qualified by ADR-014 through ADR-026;
-- treat ADR-026 as a licensing/governance boundary, not as a memory-contract semantic change: current contract v9 remains the immutable MIT-era release, the portable Memory Contract/bootstrap/generated-support interoperability layer stays MIT, and no post-transition Perimeter-covered Core release may publish until release packaging satisfies the notice gate;
+- treat ADR-026 as a licensing/governance boundary, not as a memory-contract semantic change: current contract v9 remains the immutable MIT-era release, the portable Memory Contract/bootstrap/generated-support interoperability layer stays MIT, and no post-transition Core release may publish until mixed-license packaging provides both the required Perimeter and MIT notice material; until then the release workflow remains fail-closed above v0.9.0;
 - treat contract v9 as the completed normal hosted-write compatibility floor. Normal hosted mutation admission MUST reject contract-v8 repositories rather than silently omitting v8-required project current-state synchronization; supported v8 repositories may be inspected/reconciled and upgraded through the released path;
 - treat the Runethread-managed v9 memory-repository validation workflow transition as completed downstream state: normal hosted canonical pushes no longer trigger redundant full validation, every retained external `uses:` Action is pinned to a verified full-length commit SHA, exact prior managed workflow recognition remains the supported migration source, and customized/unrecognized workflow state is not silently overwritten;
 - treat generated/current v9 support prose alignment as completed migration state: project current-state/overview prose is an orientation/materialized view rather than a canonical source, project-view user bytes remain preserved, and automatic README replacement is limited to exact recognized prior managed README state rather than a broad heading/lock heuristic;
