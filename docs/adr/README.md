@@ -66,7 +66,7 @@ ADR-024 freezes the concrete Phase 2.6 v1 safety-journal protocol that ADR-019 h
 
 ADR-025 requires publication quiescence to cover delayed gateway/token issuance and every possibly admitted remote ref-update request. Executor termination and token expiry alone do not prove server completion. Enforced immutable issuance/dispatch cutoffs and rollback-independent completion evidence constrain recovery; absent proof, v1 remains in doubt without automatic retry or lane release, potentially indefinitely.
 
-ADR-026 establishes the project-wide licensing/commercial model. Current Runethread-owned source is source-available under PolyForm Perimeter 1.0.1, historical MIT grants remain intact for earlier versions, current Core and Hosted licensing must stay aligned, commercial exceptions remain possible, and an explicit inbound-rights policy is required before material third-party source contributions are merged if separate commercial licensing flexibility is to be preserved.
+ADR-026 establishes the project-wide licensing/commercial model. Current Core and Hosted **implementation source** covered by the decision is source-available under PolyForm Perimeter 1.0.1 after each repository's reviewed transition, while the portable Memory Contract/bootstrap/generated user-repository support layer remains MIT for interoperability. Historical MIT grants remain intact, user-authored data is outside the software-license grant, commercial exceptions remain possible, and an explicit inbound-rights policy is required before material third-party source contributions are merged if separate commercial-licensing flexibility is to be preserved.
 
 ## ADR format
 
