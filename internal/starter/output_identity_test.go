@@ -4,9 +4,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"testing"
 
 	runethread "github.com/runethread/core"
@@ -48,31 +50,9 @@ func TestInitialRepositoryOutputIdentity(t *testing.T) {
 		t.Fatalf("init repository: %v", err)
 	}
 
-	got := map[string]string{}
-	if err := filepath.WalkDir(root, func(path string, entry os.DirEntry, walkErr error) error {
-		if walkErr != nil {
-			return walkErr
-		}
-		if entry.IsDir() {
-			return nil
-		}
-		rel, err := filepath.Rel(root, path)
-		if err != nil {
-			return err
-		}
-		rel = filepath.ToSlash(rel)
-		if _, isContract := contractPaths[rel]; isContract {
-			return nil
-		}
-		data, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		sum := sha256.Sum256(data)
-		got[rel] = hex.EncodeToString(sum[:])
-		return nil
-	}); err != nil {
-		t.Fatalf("walk generated repository: %v", err)
+	got, err := collectGeneratedOutputIdentity(root, contractPaths)
+	if err != nil {
+		t.Fatalf("collect generated repository identity: %v", err)
 	}
 
 	if len(got) != len(expected) {
@@ -93,6 +73,67 @@ func TestInitialRepositoryOutputIdentity(t *testing.T) {
 			t.Errorf("unexpected generated non-contract path %s", rel)
 		}
 	}
+}
+
+func TestGeneratedOutputIdentityRejectsSymlink(t *testing.T) {
+	root := t.TempDir()
+	target := filepath.Join(root, "target.txt")
+	if err := os.WriteFile(target, []byte("target bytes\n"), 0o644); err != nil {
+		t.Fatalf("write symlink target: %v", err)
+	}
+	link := filepath.Join(root, "link.txt")
+	if err := os.Symlink("target.txt", link); err != nil {
+		t.Skipf("symlink creation unavailable on this platform/runner: %v", err)
+	}
+
+	_, err := collectGeneratedOutputIdentity(root, map[string]struct{}{})
+	if err == nil {
+		t.Fatal("generated-output identity accepted a symlink")
+	}
+	if !strings.Contains(err.Error(), "not a regular file") {
+		t.Fatalf("generated-output identity rejected symlink with unexpected error: %v", err)
+	}
+}
+
+func collectGeneratedOutputIdentity(root string, contractPaths map[string]struct{}) (map[string]string, error) {
+	got := map[string]string{}
+	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		rel = filepath.ToSlash(rel)
+		if _, isContract := contractPaths[rel]; isContract {
+			return nil
+		}
+		if entry.Type()&os.ModeSymlink != 0 {
+			return fmt.Errorf("generated non-contract path %s is not a regular file", rel)
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return fmt.Errorf("inspect generated non-contract path %s: %w", rel, err)
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("generated non-contract path %s is not a regular file", rel)
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		sum := sha256.Sum256(data)
+		got[rel] = hex.EncodeToString(sum[:])
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return got, nil
 }
 
 func sortedMapKeys(values map[string]string) []string {

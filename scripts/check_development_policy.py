@@ -175,6 +175,15 @@ FORBIDDEN_GLOBAL_LICENSE_PATTERNS = (
         "blanket Perimeter Runethread claim",
         re.compile(r"(?i)\b(?:all|entire)\s+Runethread[^\n]{0,160}\bPolyForm\s+Perimeter\b"),
     ),
+    (
+        "category-wide MIT exception claim",
+        re.compile(
+            r"(?i)\b(?:Memory\s+Contract|operational\s+contract)\b"
+            r"[^.\n]{0,120}\bbootstrap\b"
+            r"[^.\n]{0,160}\bgenerated(?:[- ](?:support|user[- ]repository\s+support))?\b"
+            r"[^.\n]{0,120}\b(?:stays|remains|is)\s+MIT\b"
+        ),
+    ),
 )
 
 VALIDATE_NEEDLES = (
@@ -227,6 +236,8 @@ PROCESS_NEEDLES = (
     "Licensing / rights gate",
     "Readable licensing consistency is also part of this gate",
     "every Git-tracked regular file that decodes as UTF-8 text",
+    "Prospective MIT treatment is limited to the exact current material recorded in `LICENSING_BOUNDARY.json`",
+    "do not infer MIT treatment from labels such as Memory Contract, bootstrap, generated support, documentation, or interoperability",
     "Core binaries embed MIT-covered `ContractFS` interoperability material",
     "mixed-license distribution",
     "public `runethread/memory-template`",
@@ -272,6 +283,8 @@ MILESTONE_NEEDLES = (
 
 ROADMAP_NEEDLES = (
     "ADR-026 **system licensing transition**",
+    "prospectively MIT treatment is limited to the exact material and byte identities in `LICENSING_BOUNDARY.json`",
+    "Perimeter remains the default everywhere else",
     "establish basic protected-`main` policy on `runethread/memory-template`",
     "scoped MIT license/copyright notice",
     "Existing private/user memory repositories are not modified merely to add a notice",
@@ -364,6 +377,11 @@ ADR_CATALOG_NEEDLES = (
     "exact machine-guarded MIT exception",
     "Perimeter remains the default outside that exception",
     "Historical MIT grants remain intact",
+)
+
+OUTPUT_IDENTITY_NEEDLES = (
+    "TestGeneratedOutputIdentityRejectsSymlink",
+    "is not a regular file",
 )
 
 
@@ -645,6 +663,7 @@ def check(root: Path) -> list[str]:
     pipeline = read(root, "docs/runethread/DEVELOPMENT_PIPELINE.md", errors)
     milestone = read(root, "docs/runethread/CURRENT_MILESTONE.md", errors)
     roadmap = read(root, "docs/runethread/ROADMAP.md", errors)
+    output_identity = read(root, "internal/starter/output_identity_test.go", errors)
 
     for rel, expected in EXACT_LEGAL_SHA256.items():
         check_exact_sha256(root, rel, expected, "legal text", errors)
@@ -682,6 +701,7 @@ def check(root: Path) -> list[str]:
     require_needles("ENGINEERING_PROCESS.md", process, PROCESS_NEEDLES, errors)
     require_needles("DEVELOPMENT_PIPELINE.md", pipeline, PIPELINE_NEEDLES, errors)
     require_needles("pull_request_template.md", pr_template, PR_NEEDLES, errors)
+    require_needles("output_identity_test.go", output_identity, OUTPUT_IDENTITY_NEEDLES, errors)
 
     check_readable_licensing_surface(root, errors)
     return errors

@@ -125,7 +125,7 @@ A genuine contract change must normally include:
 
 Never retroactively reinterpret an immutable published contract to avoid these requirements.
 
-ADR-026 additionally makes the portable operational contract/interoperability layer an explicit MIT-licensed boundary. A contract-path change therefore also requires confirming that the changed material remains within the intended permissive boundary or recording a new licensing decision; a root implementation license must not silently override the contract's interoperability policy.
+ADR-026 does not license material by role or category. Prospective MIT treatment is limited to the exact current material recorded in `LICENSING_BOUNDARY.json`; a contract-path change therefore requires confirming and, if intended, explicitly updating that machine-readable exception through reviewed licensing work. A root implementation license must not silently override the exact interoperability exception.
 
 ---
 
@@ -326,7 +326,7 @@ Before any change that affects license files, rightsholder identity, commercial-
 
 1. identify the exact material whose licensing changes and the rights evidence relied on;
 2. preserve historical MIT grants rather than describing them as revoked by a later repository-root license;
-3. preserve the explicit MIT interoperability boundary for the Memory Contract/bootstrap/generated support layer unless a new reviewed decision changes it;
+3. preserve the exact prospective MIT exception recorded in `LICENSING_BOUNDARY.json`; do not infer MIT treatment from labels such as Memory Contract, bootstrap, generated support, documentation, or interoperability unless a new reviewed decision changes the manifest;
 4. keep user-authored memory/project/import/attachment data outside Runethread's software-license grant;
 5. do not treat repository ownership, merge authority, or a DCO-style origin certification as automatic separate-relicensing rights;
 6. before material third-party source is merged, require an explicit inbound-rights policy sufficient for that material's target licensing class and intended separate commercial licensing;
@@ -431,7 +431,7 @@ For changes requiring repository migration:
 
 For canonical-data-preserving metadata migrations, use Git tree/blob identity where possible as an independent byte-preservation proof.
 
-Managed-file license/notice changes are not permission to license the repository as a whole. Preserve ADR-026's MIT interoperability boundary and explicitly keep user-authored data outside Runethread's software-license grant. Any future template/generated-user-repository distribution of MIT interoperability material must make the MIT license/copyright notice available for those managed files through the normal contract/bootstrap/release/downstream path; ADR-026 does not authorize opportunistic edits to current v0.9 user repositories merely to add notice files.
+Managed-file license/notice changes are not permission to license the repository as a whole. Preserve ADR-026's exact machine-enumerated MIT exception and explicitly keep user-authored data outside Runethread's software-license grant. Any future template/generated-user-repository distribution of MIT interoperability material must make the MIT license/copyright notice available for those managed files through the normal contract/bootstrap/release/downstream path; ADR-026 does not authorize opportunistic edits to current v0.9 user repositories merely to add notice files.
 
 ---
 
@@ -488,7 +488,7 @@ Phase 2.6 Memory Write Delivery Pipeline is the current engineering milestone. P
 
 Before hosted runtime implementation proceeds, the pre-implementation sequence is:
 
-1. finish the protected ADR-026 licensing transition in Core, preserving the Perimeter implementation / MIT interoperability / historical-MIT / user-data boundaries;
+1. finish the protected ADR-026 licensing transition in Core, preserving the Perimeter implementation default, the exact prospective MIT exception in `LICENSING_BOUNDARY.json`, historical MIT grants, and the user-data boundary;
 2. establish basic protected-`main` policy on the public `runethread/memory-template`, then land only the scoped MIT license/copyright notice for the Runethread-authored interoperability material it already distributes; do not modify existing private/user memory repositories merely for notice remediation;
 3. complete Hosted's protected ADR-026 transition, including its Perimeter implementation default and explicit historical-MIT/rightsholder boundary, before any runtime/Worker source is merged;
 4. introduce the reproducibly locked TypeScript/Cloudflare developer toolchain and a fail-closed **non-operational Worker shell only**, with lockfile-based install, generated Worker type verification, runtime tests, cross-platform developer-toolchain CI, and npm Dependabot; no provider resource or production deployment is authorized by that slice;
@@ -498,7 +498,7 @@ Before hosted runtime implementation proceeds, the pre-implementation sequence i
 For Phase 2.6 work:
 
 - start from freshly verified `main` and ADR-012/ADR-013 invariants as amended/qualified by ADR-014 through ADR-026;
-- treat ADR-026 as a licensing/governance boundary, not as a memory-contract semantic change: current contract v9 remains the immutable MIT-era release, the portable Memory Contract/bootstrap/generated-support interoperability layer stays MIT, and no post-transition Core release may publish until mixed-license packaging provides both the required Perimeter and MIT notice material; until then the release workflow remains fail-closed above v0.9.0;
+- treat ADR-026 as a licensing/governance boundary, not as a memory-contract semantic change: current contract v9 remains the immutable MIT-era release; prospective MIT treatment is limited to the exact material and byte identities recorded in `LICENSING_BOUNDARY.json`, Perimeter is the default everywhere else, historical MIT grants remain intact, and no post-transition Core release may publish until mixed-license packaging provides both the required Perimeter and MIT notice material; until then the release workflow remains fail-closed above v0.9.0;
 - treat contract v9 as the completed normal hosted-write compatibility floor. Normal hosted mutation admission MUST reject contract-v8 repositories rather than silently omitting v8-required project current-state synchronization; supported v8 repositories may be inspected/reconciled and upgraded through the released path;
 - treat the Runethread-managed v9 memory-repository validation workflow transition as completed downstream state: normal hosted canonical pushes no longer trigger redundant full validation, every retained external `uses:` Action is pinned to a verified full-length commit SHA, exact prior managed workflow recognition remains the supported migration source, and customized/unrecognized workflow state is not silently overwritten;
 - treat generated/current v9 support prose alignment as completed migration state: project current-state/overview prose is an orientation/materialized view rather than a canonical source, project-view user bytes remain preserved, and automatic README replacement is limited to exact recognized prior managed README state rather than a broad heading/lock heuristic;

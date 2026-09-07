@@ -149,7 +149,7 @@ Governing decisions:
 - ADR-023 — rollback-durable terminal operation dispositions before client-visible completion/lane release;
 - ADR-024 — deterministic journal lineage, complete-tail recovery/barrier proof, no active-epoch compaction, and explicit Cloudflare/provider TCB;
 - ADR-025 — publication quiescence includes delayed issuance and already-admitted remote requests;
-- ADR-026 — licensing/commercial model: Core and Hosted implementation source transitions to PolyForm Perimeter 1.0.1, while the portable Memory Contract/bootstrap/generated user-repository support layer remains MIT and user-authored data remains outside the software-license grant.
+- ADR-026 — licensing/commercial model: Core and Hosted implementation source transitions to PolyForm Perimeter 1.0.1; prospectively MIT treatment is limited to the exact material and byte identities in `LICENSING_BOUNDARY.json`, Perimeter remains the default everywhere else, and user-authored data remains outside the software-license grant.
 
 ### Contract and managed-support prerequisite
 

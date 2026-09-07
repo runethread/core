@@ -10,7 +10,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "check_development_policy.py"
+SCRIPT = ROOT / "scripts/check_development_policy.py"
 
 spec = importlib.util.spec_from_file_location("check_development_policy", SCRIPT)
 assert spec and spec.loader
@@ -279,6 +279,27 @@ def test_readme_cannot_broaden_summary() -> None:
         path = root / "README.md"
         replace_once(path, "Perimeter is the default everywhere else", "the rest is unspecified")
         require_error(root, "Perimeter is the default everywhere else")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_category_wide_mit_exception_claim_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/runethread/ROADMAP.md"
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write("\nThe Memory Contract/bootstrap/generated-support interoperability layer remains MIT.\n")
+        require_error(root, "category-wide MIT exception claim")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_output_identity_symlink_guard_cannot_be_removed() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "internal/starter/output_identity_test.go"
+        replace_once(path, "TestGeneratedOutputIdentityRejectsSymlink", "TestGeneratedOutputIdentityAllowsSymlink")
+        require_error(root, "TestGeneratedOutputIdentityRejectsSymlink")
     finally:
         shutil.rmtree(root)
 
