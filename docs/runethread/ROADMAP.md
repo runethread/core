@@ -148,11 +148,12 @@ Governing decisions:
 - ADR-022 — deterministic, fully audited candidate Git commit envelope and verified exact-C object closure;
 - ADR-023 — rollback-durable terminal operation dispositions before client-visible completion/lane release;
 - ADR-024 — deterministic journal lineage, complete-tail recovery/barrier proof, no active-epoch compaction, and explicit Cloudflare/provider TCB;
-- ADR-025 — publication quiescence includes delayed issuance and already-admitted remote requests.
+- ADR-025 — publication quiescence includes delayed issuance and already-admitted remote requests;
+- ADR-026 — licensing/commercial model: Core and Hosted implementation source transitions to PolyForm Perimeter 1.0.1, while the portable Memory Contract/bootstrap/generated user-repository support layer remains MIT and user-authored data remains outside the software-license grant.
 
 ### Contract and managed-support prerequisite
 
-The ADR-015 contract-v9 prerequisite is complete: immutable Runethread v0.9.0 is released, and the public template and known private memory repository are migrated and validated. Contract v8 remains immutable and retains its project-view synchronization rule until explicit supported migration. Current work is the renewed architecture freeze for ADR-024/ADR-025, followed by hosted implementation; do not repeat the completed v9 rollout.
+The ADR-015 contract-v9 prerequisite is complete: immutable Runethread v0.9.0 is released, and the public template and known private memory repository are migrated and validated. Contract v8 remains immutable and retains its project-view synchronization rule until explicit supported migration. The renewed ADR-024/ADR-025 architecture-freeze gate and the initial `runethread/hosted` bootstrap are complete. Current gating work is the reviewed ADR-026 Core/Hosted licensing transition; no Hosted runtime/Worker source may land until Hosted adopts that licensing state. After licensing, proceed to the locked TypeScript/Cloudflare toolchain plus non-operational Worker shell, then the separately reviewed Hosted release-identity/release-pipeline baseline required before auth/API implementation. Do not repeat the completed v9 rollout.
 
 That completed released migration updated managed support/bootstrap state under ADR-017/ADR-019:
 
@@ -551,6 +552,6 @@ Possible future work:
 
 The immediate milestone is **Phase 2.6 — Memory Write Delivery Pipeline**.
 
-> Complete the renewed exact-head zero-edit architecture freeze for ADR-012 through ADR-025, then implement the hosted delivery path. Contract v9 / v0.9.0 release and downstream migration are already complete. CURRENT_MILESTONE.md and issue #20 identify the live work boundary. Preserve one live repository DO, Core-owned semantics, independent candidate/terminal-success proof, exact publication, rollback-independent journal/terminal dispositions, protected history, and ADR-025's complete publication-quiescence requirement. No journal barrier, token expiry, timeout, or local process termination alone permits release of an unresolved remote update.
+> The ADR-012 through ADR-025 architecture freeze and initial Hosted repository bootstrap are complete. Finish the reviewed ADR-026 licensing transition in Core and Hosted before any Hosted runtime/Worker source. Then add the locked TypeScript/Cloudflare toolchain plus non-operational Worker shell, followed by the independently reviewed Hosted release-identity/release-pipeline baseline before auth/API implementation. CURRENT_MILESTONE.md and issue #20 identify the live work boundary. Preserve one live repository DO, Core-owned semantics, independent candidate/terminal-success proof, exact publication, rollback-independent journal/terminal dispositions, protected history, and ADR-025's complete publication-quiescence requirement. No journal barrier, token expiry, timeout, or local process termination alone permits release of an unresolved remote update.
 
 Only after Phase 2.6 exits green should Phase 3 MCP implementation begin.
