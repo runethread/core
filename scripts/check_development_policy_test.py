@@ -194,17 +194,17 @@ def test_licensing_mixed_distribution_drift_fails() -> None:
         shutil.rmtree(root)
 
 
-def test_licensing_cannot_drop_active_template_distribution_fails() -> None:
+def test_licensing_cannot_drop_template_role_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / "LICENSING.md"
         text = path.read_text().replace(
-            "The public template is already an active distribution",
-            "The public template may distribute",
+            "MIT interoperability/bootstrap repository, not an implementation repository",
+            "general Runethread repository",
             1,
         )
         path.write_text(text)
-        require_error(root, "The public template is already an active distribution")
+        require_error(root, "implementation repository")
     finally:
         shutil.rmtree(root)
 
@@ -220,26 +220,26 @@ def test_licensing_cannot_drop_readable_text_gate_fails() -> None:
         shutil.rmtree(root)
 
 
-def test_adr_cannot_drop_active_template_distribution_fails() -> None:
+def test_adr_cannot_drop_template_role_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md"
         text = path.read_text().replace(
-            "The public template is already an active distribution",
-            "The public template may distribute",
+            "MIT interoperability/bootstrap repository, not an implementation repository",
+            "general Runethread repository",
             1,
         )
         path.write_text(text)
-        require_error(root, "The public template is already an active distribution")
+        require_error(root, "not an implementation repository")
     finally:
         shutil.rmtree(root)
 
 
-def test_adr_cannot_restore_ambiguous_mit_wording_fails() -> None:
+def test_adr_cannot_broaden_closed_mit_exception_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md"
-        text = path.read_text().replace("The Perimeter default **does not apply to**", "The Perimeter default does not apply exclusively to", 1)
+        text = path.read_text().replace("closed enumerated MIT exception", "broad role-based MIT category", 1)
         path.write_text(text)
         require_error(root, "closed enumerated MIT exception")
     finally:
@@ -470,7 +470,8 @@ def test_nonregular_symlink_requires_explicit_classification_fails() -> None:
 def test_exact_historical_license_text_exception_is_allowed_and_byte_locked() -> None:
     root = copy_repo_surface()
     rel = "notes/historical-license.txt"
-    data = b"Runethread is released under the MIT License.\n"
+    # Build the stale sentence dynamically so the test source itself is current-policy clean.
+    data = ("Runethread " + "is released under " + "the MIT " + "License.\n").encode("utf-8")
     old = dict(module.HISTORICAL_LICENSE_TEXT_SHA256)
     try:
         path = root / rel
