@@ -66,6 +66,15 @@ def test_missing_licensing_policy_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_missing_readme_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        (root / "README.md").unlink()
+        require_error(root, "README.md")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_perimeter_version_drift_fails() -> None:
     root = copy_repo_surface()
     try:
@@ -136,6 +145,17 @@ def test_licensing_cannot_drop_active_template_distribution_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_licensing_cannot_drop_readable_text_gate_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSING.md"
+        text = path.read_text().replace("Readable-text licensing consistency", "Text consistency", 1)
+        path.write_text(text)
+        require_error(root, "Readable-text licensing consistency")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_adr_cannot_drop_active_template_distribution_fails() -> None:
     root = copy_repo_surface()
     try:
@@ -147,6 +167,28 @@ def test_adr_cannot_drop_active_template_distribution_fails() -> None:
         )
         path.write_text(text)
         require_error(root, "The public `runethread/memory-template` is already an active distribution")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_readme_cannot_drop_mixed_boundary_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "README.md"
+        text = path.read_text().replace("mixed licensing boundary", "licensing model", 1)
+        path.write_text(text)
+        require_error(root, "mixed licensing boundary")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_readme_cannot_drop_source_available_marker_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "README.md"
+        text = path.read_text().replace("source-available", "publicly readable", 1)
+        path.write_text(text)
+        require_error(root, "source-available")
     finally:
         shutil.rmtree(root)
 
@@ -190,6 +232,21 @@ def test_process_cannot_drop_mixed_license_rule_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_process_cannot_drop_readable_text_scan_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/runethread/ENGINEERING_PROCESS.md"
+        text = path.read_text().replace(
+            "every Git-tracked regular file that decodes as UTF-8 text",
+            "selected documentation files",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "every Git-tracked regular file that decodes as UTF-8 text")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_pipeline_cannot_drop_mixed_license_rule_fails() -> None:
     root = copy_repo_surface()
     try:
@@ -201,6 +258,21 @@ def test_pipeline_cannot_drop_mixed_license_rule_fails() -> None:
         )
         path.write_text(text)
         require_error(root, "Core binaries embed MIT-covered `ContractFS` material")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_pipeline_cannot_drop_readable_text_scan_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/runethread/DEVELOPMENT_PIPELINE.md"
+        text = path.read_text().replace(
+            "repository-wide readable-text licensing consistency gate",
+            "licensing consistency check",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "repository-wide readable-text licensing consistency gate")
     finally:
         shutil.rmtree(root)
 
@@ -246,6 +318,43 @@ def test_roadmap_cannot_drop_template_protection_gate_fails() -> None:
         )
         path.write_text(text)
         require_error(root, "establish basic protected-`main` policy on `runethread/memory-template`")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_new_unclassified_licensing_readable_file_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "notes" / "policy.txt"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("Implementation notes for PolyForm Perimeter License 1.0.1.\n")
+        require_error(root, "licensing-bearing readable file is not classified")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_contradictory_global_mit_claim_anywhere_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "notes" / "stale.txt"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # Split the phrase so this self-test source is not itself a stale claim.
+        bad = "Runethread " + "is released under " + "the MIT " + "License.\n"
+        path.write_text(bad)
+        require_error(root, "contradictory licensing statement")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_unrelated_new_readable_file_is_allowed() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "notes" / "ordinary.txt"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("Ordinary implementation note with no rights-policy statement.\n")
+        errors = module.check(root)
+        if errors:
+            raise AssertionError(f"unrelated readable file unexpectedly failed policy guard: {errors!r}")
     finally:
         shutil.rmtree(root)
 
@@ -364,6 +473,32 @@ def test_missing_codeowner_for_licensing_fails() -> None:
         text = path.read_text().replace("/LICENSING.md @Karageorgiou", "/LICENSING.md @nobody", 1)
         path.write_text(text)
         require_error(root, "/LICENSING.md @Karageorgiou")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_missing_codeowner_for_readme_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / ".github/CODEOWNERS"
+        text = path.read_text().replace("/README.md @Karageorgiou", "/README.md @nobody", 1)
+        path.write_text(text)
+        require_error(root, "/README.md @Karageorgiou")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_missing_codeowner_for_roadmap_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / ".github/CODEOWNERS"
+        text = path.read_text().replace(
+            "/docs/runethread/ROADMAP.md @Karageorgiou",
+            "/docs/runethread/ROADMAP.md @nobody",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "/docs/runethread/ROADMAP.md @Karageorgiou")
     finally:
         shutil.rmtree(root)
 
