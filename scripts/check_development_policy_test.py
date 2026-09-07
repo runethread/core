@@ -57,6 +57,37 @@ def test_missing_pipeline_policy_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_missing_licensing_policy_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        (root / "LICENSING.md").unlink()
+        require_error(root, "LICENSING.md")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_perimeter_version_drift_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSE"
+        text = path.read_text().replace("PolyForm Perimeter License 1.0.1", "PolyForm Perimeter License 9.9.9", 1)
+        path.write_text(text)
+        require_error(root, "PolyForm Perimeter License 1.0.1")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_licensing_boundary_drift_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSING.md"
+        text = path.read_text().replace("Permissive interoperability boundary — MIT", "Interoperability boundary", 1)
+        path.write_text(text)
+        require_error(root, "Permissive interoperability boundary — MIT")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_validation_write_permission_fails() -> None:
     root = copy_repo_surface()
     try:
@@ -164,6 +195,17 @@ def test_missing_codeowner_for_pipeline_policy_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_missing_codeowner_for_licensing_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / ".github/CODEOWNERS"
+        text = path.read_text().replace("/LICENSING.md @Karageorgiou", "/LICENSING.md @nobody", 1)
+        path.write_text(text)
+        require_error(root, "/LICENSING.md @Karageorgiou")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_pr_template_cannot_drop_scope_boundary_fails() -> None:
     root = copy_repo_surface()
     try:
@@ -171,6 +213,17 @@ def test_pr_template_cannot_drop_scope_boundary_fails() -> None:
         text = path.read_text().replace("## Scope-boundary decision", "## Scope")
         path.write_text(text)
         require_error(root, "Scope-boundary decision")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_pr_template_cannot_drop_licensing_gate_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / ".github/pull_request_template.md"
+        text = path.read_text().replace("## Licensing / rights gate", "## Rights notes", 1)
+        path.write_text(text)
+        require_error(root, "Licensing / rights gate")
     finally:
         shutil.rmtree(root)
 
