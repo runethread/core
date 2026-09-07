@@ -128,7 +128,7 @@ MILESTONE_NEEDLES = (
     "Core binaries embed MIT-covered `ContractFS` material",
     "mixed-license distribution",
     "release workflow rejects every requested version other than the already-published v0.9.0 baseline",
-    "Remediate the active public `runethread/memory-template` MIT notice surface",
+    "Remediate the public `runethread/memory-template` MIT notice",
 )
 
 PR_NEEDLES = (
@@ -173,7 +173,7 @@ LICENSING_NEEDLES = (
     "User repositories and user data",
     "Core binaries also embed the MIT-covered `ContractFS` interoperability material",
     "mixed-license distribution",
-    "active public `runethread/memory-template`",
+    "The public `runethread/memory-template` is already an active distribution",
     "No post-transition Core release may be requested or published",
 )
 
@@ -183,7 +183,7 @@ ADR026_NEEDLES = (
     "portable Memory Contract",
     "Post-transition release distribution has an explicit mixed-license notice gate",
     "Core executables also embed the MIT-covered `ContractFS` interoperability material",
-    "active public `runethread/memory-template`",
+    "The public `runethread/memory-template` is already an active distribution",
 )
 
 
