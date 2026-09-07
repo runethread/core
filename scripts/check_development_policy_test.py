@@ -264,7 +264,8 @@ def test_adr_cannot_drop_machine_boundary_authority() -> None:
     root = copy_repo_surface()
     try:
         path = root / "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md"
-        replace_once(path, "LICENSING_BOUNDARY.json", "boundary-not-recorded.json")
+        marker = "The current prospective MIT exception is defined by [`LICENSING_BOUNDARY.json`](../../LICENSING_BOUNDARY.json)."
+        replace_once(path, marker, "The current prospective MIT exception is not recorded in a machine-readable authority.")
         require_error(root, "LICENSING_BOUNDARY.json")
     finally:
         shutil.rmtree(root)
