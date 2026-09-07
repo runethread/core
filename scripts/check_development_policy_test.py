@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import shutil
 import tempfile
@@ -19,7 +20,12 @@ spec.loader.exec_module(module)
 
 def copy_repo_surface() -> Path:
     root = Path(tempfile.mkdtemp(prefix="runethread-policy-test-"))
-    for rel in module.REQUIRED_FILES:
+    rels = (
+        set(module.REQUIRED_FILES)
+        | set(module.MIT_CONTRACT_PATHS)
+        | set(module.MIT_BOOTSTRAP_INTERFACE_PATHS)
+    )
+    for rel in sorted(rels):
         src = ROOT / rel
         dst = root / rel
         dst.parent.mkdir(parents=True, exist_ok=True)
@@ -31,6 +37,12 @@ def require_error(root: Path, needle: str) -> None:
     errors = module.check(root)
     if not any(needle in error for error in errors):
         raise AssertionError(f"expected error containing {needle!r}, got {errors!r}")
+
+
+def require_clean(root: Path) -> None:
+    errors = module.check(root)
+    if errors:
+        raise AssertionError(f"expected clean policy result, got {errors!r}")
 
 
 def test_current_repository_passes() -> None:
@@ -75,6 +87,15 @@ def test_missing_readme_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_missing_adr_catalog_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        (root / "docs/adr/README.md").unlink()
+        require_error(root, "docs/adr/README.md")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_perimeter_version_drift_fails() -> None:
     root = copy_repo_surface()
     try:
@@ -108,6 +129,38 @@ def test_mit_unchecked_clause_drift_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_contract_paths_cannot_expand_mit_implicitly_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "contract.go"
+        text = path.read_text()
+        marker = '\t"templates/reference.md",\n'
+        text = text.replace(marker, marker + '\t"docs/NEW_INTEROP.md",\n', 1)
+        path.write_text(text)
+        require_error(root, "ContractPaths() does not equal the independently guarded MIT contract allowlist")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_contract_embed_wildcard_cannot_expand_mit_implicitly_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "templates/new-unreviewed.md"
+        path.write_text("# New unreviewed template\n")
+        require_error(root, "resolved ContractFS embed set does not equal the independently guarded MIT contract allowlist")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_missing_mit_allowlist_file_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        (root / "templates/reference.md").unlink()
+        require_error(root, "MIT interoperability allowlist path is missing")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_licensing_boundary_drift_fails() -> None:
     root = copy_repo_surface()
     try:
@@ -115,6 +168,17 @@ def test_licensing_boundary_drift_fails() -> None:
         text = path.read_text().replace("Permissive interoperability boundary — MIT", "Interoperability boundary", 1)
         path.write_text(text)
         require_error(root, "Permissive interoperability boundary — MIT")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_licensing_cannot_drop_closed_exception_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSING.md"
+        text = path.read_text().replace("closed and enumerated", "role based", 1)
+        path.write_text(text)
+        require_error(root, "closed and enumerated")
     finally:
         shutil.rmtree(root)
 
@@ -135,12 +199,12 @@ def test_licensing_cannot_drop_active_template_distribution_fails() -> None:
     try:
         path = root / "LICENSING.md"
         text = path.read_text().replace(
-            "The public `runethread/memory-template` is already an active distribution",
+            "The public template is already an active distribution",
             "The public template may distribute",
             1,
         )
         path.write_text(text)
-        require_error(root, "The public `runethread/memory-template` is already an active distribution")
+        require_error(root, "The public template is already an active distribution")
     finally:
         shutil.rmtree(root)
 
@@ -161,12 +225,23 @@ def test_adr_cannot_drop_active_template_distribution_fails() -> None:
     try:
         path = root / "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md"
         text = path.read_text().replace(
-            "The public `runethread/memory-template` is already an active distribution",
+            "The public template is already an active distribution",
             "The public template may distribute",
             1,
         )
         path.write_text(text)
-        require_error(root, "The public `runethread/memory-template` is already an active distribution")
+        require_error(root, "The public template is already an active distribution")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_adr_cannot_restore_ambiguous_mit_wording_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md"
+        text = path.read_text().replace("The Perimeter default **does not apply to**", "The Perimeter default does not apply exclusively to", 1)
+        path.write_text(text)
+        require_error(root, "closed enumerated MIT exception")
     finally:
         shutil.rmtree(root)
 
@@ -282,27 +357,27 @@ def test_milestone_cannot_drop_mixed_license_rule_fails() -> None:
     try:
         path = root / "docs/runethread/CURRENT_MILESTONE.md"
         text = path.read_text().replace(
-            "Core binaries embed MIT-covered `ContractFS` material",
+            "Core binaries embed MIT-covered contract material",
             "Core binaries include contract material",
             1,
         )
         path.write_text(text)
-        require_error(root, "Core binaries embed MIT-covered `ContractFS` material")
+        require_error(root, "Core binaries embed MIT-covered contract material")
     finally:
         shutil.rmtree(root)
 
 
-def test_milestone_cannot_drop_template_notice_gate_fails() -> None:
+def test_milestone_cannot_drop_template_protection_gate_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / "docs/runethread/CURRENT_MILESTONE.md"
         text = path.read_text().replace(
-            "Remediate the public `runethread/memory-template` MIT notice",
-            "Update the template",
+            "Protect and remediate the public `runethread/memory-template`",
+            "Update the public template",
             1,
         )
         path.write_text(text)
-        require_error(root, "Remediate the public `runethread/memory-template` MIT notice")
+        require_error(root, "Protect and remediate the public `runethread/memory-template`")
     finally:
         shutil.rmtree(root)
 
@@ -333,6 +408,17 @@ def test_new_unclassified_licensing_readable_file_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_broader_rights_vocabulary_is_classified_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "notes" / "brand-policy.txt"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("This file defines the Runethread trademark policy.\n")
+        require_error(root, "licensing-bearing readable file is not classified")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_contradictory_global_mit_claim_anywhere_fails() -> None:
     root = copy_repo_surface()
     try:
@@ -346,15 +432,67 @@ def test_contradictory_global_mit_claim_anywhere_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_invalid_utf8_cannot_hide_licensing_text_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "notes" / "opaque.txt"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"\xff\xfeR\x00u\x00n\x00e\x00t\x00h\x00r\x00e\x00a\x00d\x00")
+        require_error(root, "not valid UTF-8 and has no binary exception")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_nul_bearing_file_cannot_hide_licensing_text_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "notes" / "nul.txt"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"Runethread\x00MIT\n")
+        require_error(root, "NUL-bearing tracked regular file requires an explicit binary exception")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_nonregular_symlink_requires_explicit_classification_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        target = root / "notes" / "target.txt"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("ordinary target\n")
+        link = root / "notes" / "link.txt"
+        link.symlink_to(target.name)
+        require_error(root, "non-regular repository object is not explicitly classified")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_exact_historical_license_text_exception_is_allowed_and_byte_locked() -> None:
+    root = copy_repo_surface()
+    rel = "notes/historical-license.txt"
+    data = b"Runethread is released under the MIT License.\n"
+    old = dict(module.HISTORICAL_LICENSE_TEXT_SHA256)
+    try:
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        module.HISTORICAL_LICENSE_TEXT_SHA256[rel] = hashlib.sha256(data).hexdigest()
+        require_clean(root)
+        path.write_bytes(data + b"changed\n")
+        require_error(root, "historical licensing-text SHA-256 mismatch")
+    finally:
+        module.HISTORICAL_LICENSE_TEXT_SHA256.clear()
+        module.HISTORICAL_LICENSE_TEXT_SHA256.update(old)
+        shutil.rmtree(root)
+
+
 def test_unrelated_new_readable_file_is_allowed() -> None:
     root = copy_repo_surface()
     try:
         path = root / "notes" / "ordinary.txt"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("Ordinary implementation note with no rights-policy statement.\n")
-        errors = module.check(root)
-        if errors:
-            raise AssertionError(f"unrelated readable file unexpectedly failed policy guard: {errors!r}")
+        path.write_text("Ordinary implementation note with no policy statement.\n")
+        require_clean(root)
     finally:
         shutil.rmtree(root)
 
@@ -499,6 +637,36 @@ def test_missing_codeowner_for_roadmap_fails() -> None:
         )
         path.write_text(text)
         require_error(root, "/docs/runethread/ROADMAP.md @Karageorgiou")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_missing_codeowner_for_adr_catalog_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / ".github/CODEOWNERS"
+        text = path.read_text().replace(
+            "/docs/adr/README.md @Karageorgiou",
+            "/docs/adr/README.md @nobody",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "/docs/adr/README.md @Karageorgiou")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_adr_catalog_cannot_drop_adr026_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/adr/README.md"
+        text = path.read_text().replace(
+            "[ADR-026](ADR-026-runethread-licensing-and-commercial-model.md)",
+            "ADR-026 removed",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "[ADR-026](ADR-026-runethread-licensing-and-commercial-model.md)")
     finally:
         shutil.rmtree(root)
 
