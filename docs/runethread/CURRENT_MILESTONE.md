@@ -14,7 +14,7 @@ This file is the concise current-work pointer for contributors and agents. Detai
 - The initial `runethread/hosted` repository safety/bootstrap slice is complete. Hosted PR #1 merged to `main` as `ca2282eafca03573ac9c88277125cc6973234959`, with merged tree `1e64bf1c3cf9d264adc227e421f016e4ed5d6c11` equal to the final reviewed tree. Post-merge Hosted validation run #9 succeeded.
 - Hosted `main` is protected by an active ruleset requiring a PR and strict `validate` from the GitHub Actions integration, blocking deletion/non-fast-forward updates, and allowing no bypass. `require_extra_approval_for_unattributed_changes` is intentionally false.
 - No Hosted Worker/runtime source, Durable Object, R2/evidence store, GitHub App, hosted mutation API, safety journal, finalizer, independent auditor/verifier, publisher, secret, provider resource, or production deployment exists yet.
-- ADR-026 records the accepted Runethread licensing/commercial-model decision. Its protected repository transitions are the current immediate gate and are not considered complete until both Core and Hosted reflect it.
+- ADR-026 records the accepted Runethread licensing/commercial-model decision. Its system transition is the current immediate gate: Core first, then the public-template MIT notice remediation, then Hosted. It is not complete until those repo-specific boundaries reflect the decision.
 
 ## Current licensing boundary — ADR-026
 
@@ -28,9 +28,9 @@ Runethread uses a deliberate mixed boundary:
 - **Contributions:** material third-party source remains merge-blocked until an explicit inbound-rights policy exists for the target licensing class and intended separate commercial licensing.
 - **Releases:** v0.9.0 remains an MIT-era release. Core binaries embed MIT-covered `ContractFS` material, so every later Core binary is a mixed-license distribution. No post-transition Core release may be requested or published until packaging is verified to provide both the applicable Perimeter terms/URL plus every `Required Notice:` and the MIT license/copyright notice for embedded/distributed interoperability material. Until that reviewed packaging change lands, the release workflow rejects every requested version other than the already-published v0.9.0 baseline.
 
-Future template/generated-user-repository distributions of MIT interoperability material must likewise make the MIT license/copyright notice available for those managed files through the normal contract/bootstrap/release/downstream path; ADR-026 does not modify current v0.9 user repositories merely to add notice files.
+The public `runethread/memory-template` is already an active distribution of Runethread-authored MIT interoperability material. After Core merges ADR-026, the template receives a scoped `LICENSE-MIT`/MIT notice through its own protected reviewed change. That does **not** move the template as a whole under Perimeter, change the contract-v9 managed bytes/lock identity, or license user data. Existing private/user repositories are not modified just to add a notice; the next versioned Core starter/upgrader/release path must propagate the applicable MIT notice before any later Core release is unblocked.
 
-Core's licensing branch must pass the normal protected exact-head adversarial/CI/merge/post-merge gates. Hosted must then perform its own protected transition before any runtime/Worker source is merged.
+Core's licensing branch must pass the normal protected exact-head adversarial/CI/merge/post-merge gates. The template notice remediation is then verified independently. Hosted must then perform its own protected Perimeter/history transition before any runtime/Worker source is merged.
 
 ## Immediate milestone — Phase 2.6 pre-implementation gates
 
@@ -39,10 +39,11 @@ Phase 2.6 Memory Write Delivery Pipeline remains the current engineering milesto
 The immediate sequence is:
 
 1. **Finish ADR-026 licensing transition in Core.** Protect the mixed Perimeter/MIT/history/user-data boundary in project policy and merge only an exact reviewed/validated head.
-2. **Apply ADR-026 to `runethread/hosted`.** Hosted receives the Perimeter implementation default, explicit rightsholder/history documentation, licensing policy protection, and no runtime source.
-3. **Introduce the locked Hosted developer toolchain + non-operational Worker shell.** Add the reproducibly locked TypeScript/Cloudflare toolchain, generated Worker type verification, runtime tests, cross-platform developer-toolchain CI, npm Dependabot, and a fail-closed shell. Do not create provider resources, secrets, DO/R2/GitHub App state, or deploy production service in this slice.
-4. **Establish Hosted release identity/release pipeline.** Before auth/API implementation, independently review a release baseline that pins what may become a Hosted release while deployment remains disabled until its later security/deployment gate.
-5. **Begin the actual Hosted memory-delivery implementation** only after those gates: authenticated transport-neutral request/status/cancel boundary, caller-to-App-installation repository authorization, immutable repository/canonical-ref/private-visibility binding, sealed request persistence, and then the accepted ADR-014 through ADR-025 state-machine/evidence/publication sequence.
+2. **Remediate the public `runethread/memory-template` MIT notice.** Add only the scoped MIT license/copyright notice needed for the Runethread-authored interoperability material already distributed there; preserve contract-v9 managed bytes/lock identity and do not modify existing private/user repositories merely for notice propagation.
+3. **Apply ADR-026 to `runethread/hosted`.** Hosted receives the Perimeter implementation default, explicit rightsholder/history documentation, licensing policy protection, and no runtime source.
+4. **Introduce the locked Hosted developer toolchain + non-operational Worker shell.** Add the reproducibly locked TypeScript/Cloudflare toolchain, generated Worker type verification, runtime tests, cross-platform developer-toolchain CI, npm Dependabot, and a fail-closed shell. Do not create provider resources, secrets, DO/R2/GitHub App state, or deploy production service in this slice.
+5. **Establish Hosted release identity/release pipeline.** Before auth/API implementation, independently review a release baseline that pins what may become a Hosted release while deployment remains disabled until its later security/deployment gate.
+6. **Begin the actual Hosted memory-delivery implementation** only after those gates: authenticated transport-neutral request/status/cancel boundary, caller-to-App-installation repository authorization, immutable repository/canonical-ref/private-visibility binding, sealed request persistence, and then the accepted ADR-014 through ADR-025 state-machine/evidence/publication sequence.
 
 ## Governing Phase 2.6 decisions
 
@@ -83,4 +84,4 @@ Detailed requirements remain in the ADRs and `ENGINEERING_PROCESS.md`. At minimu
 
 ## Exit direction
 
-The current licensing work is a **pre-implementation governance gate**, not completion of Phase 2.6. After Core + Hosted licensing transitions, toolchain/shell, and Hosted release identity are complete, implementation proceeds through the accepted memory-delivery sequence until issue #20's end-to-end private-repository rollout and recovery/security/operational exit criteria pass.
+The current licensing work is a **pre-implementation governance gate**, not completion of Phase 2.6. After Core + public-template notice + Hosted licensing transitions, toolchain/shell, and Hosted release identity are complete, implementation proceeds through the accepted memory-delivery sequence until issue #20's end-to-end private-repository rollout and recovery/security/operational exit criteria pass.
