@@ -110,6 +110,17 @@ def test_licensing_boundary_drift_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_licensing_mixed_distribution_drift_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSING.md"
+        text = path.read_text().replace("mixed-license distribution", "combined distribution", 1)
+        path.write_text(text)
+        require_error(root, "mixed-license distribution")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_release_license_gate_bypass_fails() -> None:
     root = copy_repo_surface()
     try:
@@ -117,6 +128,51 @@ def test_release_license_gate_bypass_fails() -> None:
         text = path.read_text().replace('if [ "$VERSION" != "v0.9.0" ]; then', "if false; then", 1)
         path.write_text(text)
         require_error(root, 'if [ "$VERSION" != "v0.9.0" ]; then')
+    finally:
+        shutil.rmtree(root)
+
+
+def test_process_cannot_drop_mixed_license_rule_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/runethread/ENGINEERING_PROCESS.md"
+        text = path.read_text().replace(
+            "Core binaries embed MIT-covered `ContractFS` interoperability material",
+            "Core binaries include contract material",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "Core binaries embed MIT-covered `ContractFS` interoperability material")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_pipeline_cannot_drop_mixed_license_rule_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/runethread/DEVELOPMENT_PIPELINE.md"
+        text = path.read_text().replace(
+            "Core binaries embed MIT-covered `ContractFS` material",
+            "Core binaries include contract material",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "Core binaries embed MIT-covered `ContractFS` material")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_milestone_cannot_drop_mixed_license_rule_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/runethread/CURRENT_MILESTONE.md"
+        text = path.read_text().replace(
+            "Core binaries embed MIT-covered `ContractFS` material",
+            "Core binaries include contract material",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "Core binaries embed MIT-covered `ContractFS` material")
     finally:
         shutil.rmtree(root)
 
