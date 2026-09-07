@@ -19,6 +19,7 @@ Check every class that applies.
 - [ ] Migration / upgrader
 - [ ] Release / packaging
 - [ ] Downstream template/private repository
+- [ ] Licensing / rights / commercial policy
 
 ## Verified baseline
 
@@ -33,7 +34,7 @@ Check every class that applies.
 
 - [ ] Every changed file belongs to the declared branch/PR purpose.
 - [ ] Any defect discovered by CI was classified by product semantics, not assumed to be CI-only.
-- [ ] No accepted/rejected repository state, trust rule, bootstrap/starter output, schema/contract behavior, migration behavior, or public API/CLI behavior changed without the corresponding change class/version/migration review.
+- [ ] No accepted/rejected repository state, trust rule, bootstrap/starter output, schema/contract behavior, migration behavior, public API/CLI behavior, or licensing/rights boundary changed without the corresponding change class and required review.
 - [ ] If scope changed materially during implementation, exploratory evidence was preserved and the final work was recreated/rebased on a clean verified base rather than hidden with a force-push.
 
 Scope decision / evidence:
@@ -57,6 +58,7 @@ For each relevant surface, state **changed / unchanged** and why. Do not leave a
 | Release/version dimensions | |
 | Go / dependencies / platforms | |
 | Template / private repository | |
+| Licensing / rightsholder / notices / inbound rights | |
 | Security / privacy | |
 | Documentation / examples | |
 
@@ -79,7 +81,7 @@ Details:
 
 ## Failure modes
 
-<!-- Stale revisions, concurrency, idempotent retry, validation failure, tampering, rollback, unsupported newer state, platform-specific behavior, release interruption, etc. -->
+<!-- Stale revisions, concurrency, idempotent retry, validation failure, tampering, rollback, unsupported newer state, platform-specific behavior, release interruption, licensing/notice drift, etc. -->
 
 ## Contract/versioning gate
 
@@ -88,6 +90,15 @@ Details:
 - [ ] No immutable published contract is being retroactively reinterpreted.
 
 Contract/version decision:
+
+## Licensing / rights gate
+
+- [ ] The PR does not change a license/rightsholder/commercial-policy boundary, **or** ADR-026 and `LICENSING.md` were reviewed against the exact changed material.
+- [ ] No material third-party source contribution is merged without an explicit inbound-rights policy sufficient for that material's target license and any intended separate commercial licensing.
+- [ ] Historical MIT grants and user-owned data rights are not described as revoked, absorbed, or silently relicensed.
+- [ ] Any release/distribution affected by this PR carries the license terms/URL and required notices applicable to every covered artifact.
+
+Licensing / rights evidence:
 
 ## Dependency/toolchain gate
 
@@ -137,14 +148,14 @@ Evidence / exact SHA:
 - [ ] No temporary verifier/fixer workflow or script leaked into the final diff.
 - [ ] Validation CI is read-only; it does not commit/push source fixes.
 - [ ] Required Actions remain pinned to immutable full commit SHAs.
-- [ ] `.gitattributes`, Dependabot, CODEOWNERS, agent policy, and policy guards remain present.
+- [ ] `.gitattributes`, Dependabot, CODEOWNERS, agent policy, licensing policy, and policy guards remain present.
 - [ ] Comments/reviews/review threads checked.
 - [ ] Base has not moved unexpectedly, or the PR was updated and revalidated.
 - [ ] No unexplained changed file remains.
 
 ## Release / downstream plan
 
-<!-- State explicitly whether this PR needs a release, template update, private-repository migration, or none. Development-pipeline work does not implicitly authorize managed memory-repository/bootstrap changes. -->
+<!-- State explicitly whether this PR needs a release, license/notice packaging change, template update, private-repository migration, or none. Development-pipeline work does not implicitly authorize managed memory-repository/bootstrap changes. -->
 
 ## Remaining concerns / uncertainty
 
