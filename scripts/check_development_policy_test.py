@@ -121,6 +121,36 @@ def test_licensing_mixed_distribution_drift_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_licensing_cannot_drop_active_template_distribution_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSING.md"
+        text = path.read_text().replace(
+            "The public `runethread/memory-template` is already an active distribution",
+            "The public template may distribute",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "The public `runethread/memory-template` is already an active distribution")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_adr_cannot_drop_active_template_distribution_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md"
+        text = path.read_text().replace(
+            "The public `runethread/memory-template` is already an active distribution",
+            "The public template may distribute",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "The public `runethread/memory-template` is already an active distribution")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_release_license_gate_bypass_fails() -> None:
     root = copy_repo_surface()
     try:
@@ -186,6 +216,21 @@ def test_milestone_cannot_drop_mixed_license_rule_fails() -> None:
         )
         path.write_text(text)
         require_error(root, "Core binaries embed MIT-covered `ContractFS` material")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_milestone_cannot_drop_template_notice_gate_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/runethread/CURRENT_MILESTONE.md"
+        text = path.read_text().replace(
+            "Remediate the public `runethread/memory-template` MIT notice",
+            "Update the template",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "Remediate the public `runethread/memory-template` MIT notice")
     finally:
         shutil.rmtree(root)
 
