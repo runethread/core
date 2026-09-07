@@ -26,7 +26,9 @@ Runethread uses a deliberate mixed boundary:
 - **User data:** user-authored memories, projects, imports, attachments, and other user-owned data are not licensed to Runethread merely because the tooling processes or stores them.
 - **Licensor/rightsholder:** George Karageorgiou is the stated current licensor for Runethread-owned Perimeter implementation material for which he controls the required rights; repository ownership or future contributor metadata is not itself a rights grant.
 - **Contributions:** material third-party source remains merge-blocked until an explicit inbound-rights policy exists for the target licensing class and intended separate commercial licensing.
-- **Releases:** v0.9.0 remains an MIT-era release. No post-transition Core release containing Perimeter-covered implementation may be requested or published until packaging is verified to provide the applicable Perimeter terms/URL and every `Required Notice:` with covered artifacts.
+- **Releases:** v0.9.0 remains an MIT-era release. Core binaries embed MIT-covered `ContractFS` material, so every later Core binary is a mixed-license distribution. No post-transition Core release may be requested or published until packaging is verified to provide both the applicable Perimeter terms/URL plus every `Required Notice:` and the MIT license/copyright notice for embedded/distributed interoperability material. Until that reviewed packaging change lands, the release workflow rejects every requested version other than the already-published v0.9.0 baseline.
+
+Future template/generated-user-repository distributions of MIT interoperability material must likewise make the MIT license/copyright notice available for those managed files through the normal contract/bootstrap/release/downstream path; ADR-026 does not modify current v0.9 user repositories merely to add notice files.
 
 Core's licensing branch must pass the normal protected exact-head adversarial/CI/merge/post-merge gates. Hosted must then perform its own protected transition before any runtime/Worker source is merged.
 
