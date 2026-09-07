@@ -42,9 +42,21 @@ ADR-026 does **not** license user-authored memories, project content, imports, a
 
 ADR-026 also does not silently relicense `runethread/memory-template` or an existing user-owned memory repository as a whole. The current public template and known contract-v9 memory repositories remain pinned to v0.9.0 / MIT-era managed contract material.
 
-The public `runethread/memory-template` is already an active distribution of Runethread-authored MIT interoperability material. After the protected Core ADR-026 transition, the template must receive a scoped copy of the MIT license/copyright notice through its own protected, reviewed change. That remediation licenses only the Runethread-authored MIT interoperability material it distributes; it does not license user-authored memory/project data and does not change the contract-v9 managed contract bytes or lock identity.
+The public `runethread/memory-template` is already an active distribution of Runethread-authored MIT interoperability material. After the protected Core ADR-026 transition, the template must receive a scoped copy of the MIT license/copyright notice through its own protected, reviewed change. That notice remediation applies only to the Runethread-authored MIT interoperability material the template already distributes; it does not create the underlying MIT grant, license user-authored memory/project data, or change the contract-v9 managed contract bytes or lock identity.
 
 Existing user-owned/private memory repositories are **not** modified merely to add a notice file. The immutable v0.9.0 starter/upgrader behavior remains historical evidence. Before any later Core release is unblocked, the versioned starter/upgrader/release path must make the MIT license/copyright notice available with Runethread-managed MIT interoperability material it generates or upgrades, using the normal bootstrap/version/release/downstream gates rather than opportunistic user-repository edits.
+
+## Readable-text licensing consistency
+
+Licensing consistency is a repository-wide readable-text invariant, not a convention limited to `LICENSE`, this file, or the current planning documents.
+
+Core CI must enumerate **every Git-tracked regular file that decodes as UTF-8 text**, regardless of filename extension or directory. If a readable file contains licensing/rightsholder/commercial-model vocabulary, it must belong to the deliberately classified licensing-bearing text surface. A new readable file that begins discussing licensing therefore fails closed until its role is reviewed and added to that classified surface.
+
+The same scan must reject known contradictory global claims wherever they appear, including stale present-tense statements that make all of Runethread MIT-only or describe the Perimeter-covered implementation as open source. The scan is intentionally narrower than a legal-language parser: historical legal text, historical-grant descriptions, quotations, and explicitly scoped MIT interoperability statements remain valid. Files unrelated to licensing do **not** need boilerplate licensing prose merely to pass the guard.
+
+The authoritative licensing files and required human/agent entrypoints are also checked for positive markers, so a file cannot evade review simply by deleting all licensing language. This gives the repository two complementary protections: positive assertions on the files that must explain the policy, and a repository-wide contradiction/classification scan over all other tracked readable text.
+
+`runethread/hosted` must adopt an equivalent repository-local readable-text consistency guard as part of its ADR-026 transition. The public `runethread/memory-template` remains deliberately smaller: its scoped MIT notice is landed through protected review and verified against the immutable contract-v9 bytes, while existing private/user repositories are not swept or relicensed by Core CI.
 
 ## Binary and release distribution
 
