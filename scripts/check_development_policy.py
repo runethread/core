@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -31,6 +32,11 @@ REQUIRED_FILES = (
     "scripts/check_development_policy_test.py",
 )
 
+EXACT_FILE_SHA256 = {
+    "LICENSE": "bb1d1de338bdbe282f151bf54d6bb6ad98ad37b9592539461fb51ff4bcd4e1c3",
+    "LICENSE-MIT": "a648e5f1a60155f62062b88d4c5758306a119a63962233b40a9bb2d48114bef4",
+}
+
 VALIDATE_NEEDLES = (
     "permissions:\n  contents: read",
     "go mod verify",
@@ -49,6 +55,13 @@ VALIDATE_NEEDLES = (
     "macos-latest",
     "windows-latest",
     "needs: [quality, platform]",
+)
+
+RELEASE_NEEDLES = (
+    "Enforce ADR-026 license packaging gate",
+    'if [ "$VERSION" != "v0.9.0" ]; then',
+    "ADR-026 blocks post-v0.9.0 release publication until mixed-license packaging is implemented and verified",
+    "MIT license/copyright notice for embedded/exported interoperability material",
 )
 
 AGENT_NEEDLES = (
@@ -132,19 +145,6 @@ GITATTRIBUTES_NEEDLES = (
     "*.exe binary",
 )
 
-LICENSE_NEEDLES = (
-    "Required Notice: Copyright 2026 George Karageorgiou",
-    "# PolyForm Perimeter License 1.0.1",
-    "## Noncompete",
-    "providing to others any product that competes with the software",
-)
-
-MIT_LICENSE_NEEDLES = (
-    "MIT License",
-    "Copyright (c) 2026 George Karageorgiou",
-    "Permission is hereby granted, free of charge",
-)
-
 LICENSING_NEEDLES = (
     "Implementation default — PolyForm Perimeter 1.0.1",
     "Permissive interoperability boundary — MIT",
@@ -168,6 +168,17 @@ def read(root: Path, rel: str, errors: list[str]) -> str:
     except OSError as exc:
         errors.append(f"{rel}: cannot read required file: {exc}")
         return ""
+
+
+def check_exact_sha256(root: Path, rel: str, expected: str, errors: list[str]) -> None:
+    path = root / rel
+    try:
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError as exc:
+        errors.append(f"{rel}: cannot hash required file: {exc}")
+        return
+    if actual != expected:
+        errors.append(f"{rel}: exact legal text SHA-256 mismatch: got {actual}, want {expected}")
 
 
 def check_action_pins(rel: str, text: str, errors: list[str]) -> None:
@@ -211,8 +222,6 @@ def check(root: Path) -> list[str]:
             errors.append(f"{rel}: required development-safety file is missing")
 
     gitattributes = read(root, ".gitattributes", errors)
-    license_text = read(root, "LICENSE", errors)
-    mit_license = read(root, "LICENSE-MIT", errors)
     licensing = read(root, "LICENSING.md", errors)
     adr026 = read(root, "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md", errors)
     validate = read(root, ".github/workflows/validate.yml", errors)
@@ -223,6 +232,9 @@ def check(root: Path) -> list[str]:
     agents = read(root, "AGENTS.md", errors)
     process = read(root, "docs/runethread/ENGINEERING_PROCESS.md", errors)
     pipeline = read(root, "docs/runethread/DEVELOPMENT_PIPELINE.md", errors)
+
+    for rel, expected in EXACT_FILE_SHA256.items():
+        check_exact_sha256(root, rel, expected, errors)
 
     if "pull_request_target:" in validate:
         errors.append("validate.yml: pull_request_target is forbidden for validation CI")
@@ -239,8 +251,7 @@ def check(root: Path) -> list[str]:
         errors.append("release.yml: release publication requires explicit contents: write")
 
     require_needles(".gitattributes", gitattributes, GITATTRIBUTES_NEEDLES, errors)
-    require_needles("LICENSE", license_text, LICENSE_NEEDLES, errors)
-    require_needles("LICENSE-MIT", mit_license, MIT_LICENSE_NEEDLES, errors)
+    require_needles("release.yml", release, RELEASE_NEEDLES, errors)
     require_needles("LICENSING.md", licensing, LICENSING_NEEDLES, errors)
     require_needles("ADR-026", adr026, ADR026_NEEDLES, errors)
     require_needles("dependabot.yml", dependabot, DEPENDABOT_NEEDLES, errors)
