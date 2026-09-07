@@ -60,6 +60,8 @@ The current Core MIT repository-file allowlist is exactly:
 
 The first nineteen paths are the current operational-contract set. `ContractPaths()` is **not licensing authority** and must not enlarge this exception automatically. Core policy independently pins the exact MIT contract-path set and requires both `ContractPaths()` and the resolved `ContractFS` embed set to match it. Any membership change requires explicit licensing/contract-packaging review and a coordinated policy update before the new material may be distributed as MIT interoperability material.
 
+#### Narrow generated-output exception
+
 A separate narrow output exception applies only to Runethread-authored managed support bytes emitted by supported `runethread init` or `runethread upgrade` flows at these exact memory-repository paths:
 
 - `.gitattributes`
