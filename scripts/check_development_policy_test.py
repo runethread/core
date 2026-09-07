@@ -235,6 +235,21 @@ def test_milestone_cannot_drop_template_notice_gate_fails() -> None:
         shutil.rmtree(root)
 
 
+def test_roadmap_cannot_drop_template_protection_gate_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "docs/runethread/ROADMAP.md"
+        text = path.read_text().replace(
+            "establish basic protected-`main` policy on `runethread/memory-template`",
+            "update `runethread/memory-template`",
+            1,
+        )
+        path.write_text(text)
+        require_error(root, "establish basic protected-`main` policy on `runethread/memory-template`")
+    finally:
+        shutil.rmtree(root)
+
+
 def test_validation_write_permission_fails() -> None:
     root = copy_repo_surface()
     try:
