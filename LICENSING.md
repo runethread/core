@@ -42,7 +42,9 @@ ADR-026 does **not** license user-authored memories, project content, imports, a
 
 ADR-026 also does not silently relicense `runethread/memory-template` or an existing user-owned memory repository as a whole. The current public template and known contract-v9 memory repositories remain pinned to v0.9.0 / MIT-era managed contract material.
 
-When a future release generates, upgrades, templates, or otherwise distributes Runethread-managed MIT interoperability files in a user repository, the distribution must make the MIT license and copyright notice available with those managed files without implying that the same license covers the user's own data. The current contract-v9/template state remains unchanged by this transition; any future notice-propagation change must go through the normal contract/bootstrap/release/downstream gates rather than modifying user repositories opportunistically.
+The public `runethread/memory-template` is already an active distribution of Runethread-authored MIT interoperability material. After the protected Core ADR-026 transition, the template must receive a scoped copy of the MIT license/copyright notice through its own protected, reviewed change. That remediation licenses only the Runethread-authored MIT interoperability material it distributes; it does not license user-authored memory/project data and does not change the contract-v9 managed contract bytes or lock identity.
+
+Existing user-owned/private memory repositories are **not** modified merely to add a notice file. The immutable v0.9.0 starter/upgrader behavior remains historical evidence. Before any later Core release is unblocked, the versioned starter/upgrader/release path must make the MIT license/copyright notice available with Runethread-managed MIT interoperability material it generates or upgrades, using the normal bootstrap/version/release/downstream gates rather than opportunistic user-repository edits.
 
 ## Binary and release distribution
 
