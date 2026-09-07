@@ -6,10 +6,12 @@
 /LICENSE @Karageorgiou
 /LICENSE-MIT @Karageorgiou
 /LICENSING.md @Karageorgiou
+/README.md @Karageorgiou
 /docs/adr/ADR-026-runethread-licensing-and-commercial-model.md @Karageorgiou
 /docs/runethread/ENGINEERING_PROCESS.md @Karageorgiou
 /docs/runethread/DEVELOPMENT_PIPELINE.md @Karageorgiou
 /docs/runethread/CURRENT_MILESTONE.md @Karageorgiou
+/docs/runethread/ROADMAP.md @Karageorgiou
 /.github/pull_request_template.md @Karageorgiou
 /.github/workflows/ @Karageorgiou
 /.github/dependabot.yml @Karageorgiou
