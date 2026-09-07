@@ -71,6 +71,8 @@ python3 scripts/check_development_policy.py
 python3 scripts/check_pr_impact_test.py
 ```
 
+The development-policy guard is also the repository-wide readable-text licensing consistency gate. It MUST enumerate every Git-tracked regular file that decodes as UTF-8 text, regardless of extension or directory; reject known global licensing statements that contradict ADR-026; and fail when a new licensing-bearing readable file appears without deliberate classification. Files that do not discuss licensing do not need licensing boilerplate merely to pass this gate.
+
 For pull requests, the PR impact/versioning guard MUST also run against the exact PR base SHA.
 
 Formatting is checked, never auto-written by CI. Whitespace defects are corrected deliberately in source and committed before revalidation.
@@ -140,7 +142,7 @@ The repository MUST retain:
 - `.github/CODEOWNERS` covering safety-critical policy/workflow/trust/migration/licensing surfaces;
 - `AGENTS.md` and the engineering/pipeline policy documents;
 - `LICENSE`, `LICENSE-MIT`, `LICENSING.md`, and ADR-026 as the protected licensing/rightsholder authority surface;
-- the PR impact guard and development-policy guard with self-tests that byte-lock the standardized `LICENSE` and `LICENSE-MIT` texts, fail when mandatory licensing-policy markers drift, and fail if the temporary post-v0.9.0 mixed-license release block is bypassed.
+- the PR impact guard and development-policy guard with self-tests that byte-lock the standardized `LICENSE` and `LICENSE-MIT` texts, fail when mandatory licensing-policy markers drift, fail when the repository-wide readable licensing surface becomes unclassified or contradictory, and fail if the temporary post-v0.9.0 mixed-license release block is bypassed.
 
 `go mod verify` checks module content integrity. Dependabot provides update discovery. A vulnerability scanner is added only when its pinned version/update policy is deliberately owned; it is not substituted with an unpinned network-installed tool. Before MCP or another dependency-bearing phase, explicitly re-evaluate vulnerability scanning and the observed GitHub dependency graph.
 
@@ -155,7 +157,7 @@ Before readiness:
 1. verify PR base/head SHAs;
 2. inspect the canonical GitHub changed-file list and patch;
 3. confirm every changed file belongs to the declared change class/scope;
-4. run the PR-specific impact/version guard;
+4. run the PR-specific impact/versioning guard;
 5. for licensing/rightsholder/commercial-policy changes, apply the **Licensing / rights gate** in `ENGINEERING_PROCESS.md` and the PR template against the exact changed material, historical grants, contributor rights, user-data boundary, and distribution notices;
 6. require the exact PR head to pass Linux quality, macOS, Windows, and the aggregate `validate` check;
 7. inspect comments, reviews, and review threads;
