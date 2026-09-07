@@ -62,7 +62,7 @@ The current public memory template and known contract-v9 memory repositories rem
 
 No right in user-authored memories, project content, imports, attachments, or other user-owned data is granted to Runethread merely because Runethread tooling stores, indexes, validates, transports, or processes that data.
 
-When future releases generate or upgrade Runethread-managed files in user repositories, the applicable managed-file terms/notices must be made available without implying that those terms cover user-authored data.
+When future releases generate, upgrade, template, or otherwise distribute Runethread-managed MIT interoperability files in user repositories, the distribution must make the MIT license and copyright notice available for those managed files without implying that the same license covers user-authored data. The current contract-v9/template bytes are not changed by this ADR; any future notice-propagation change must pass the normal contract/bootstrap/release/downstream gates.
 
 ### 5. Core and Hosted implementation policy must align prospectively
 
@@ -110,13 +110,15 @@ For Perimeter-covered implementation, the inbound grant must preserve the projec
 
 For MIT interoperability material, the contribution path must likewise establish sufficient rights to distribute the contribution under MIT.
 
-### 11. Post-transition release distribution has an explicit notice gate
+### 11. Post-transition release distribution has an explicit mixed-license notice gate
 
 PolyForm Perimeter requires anyone receiving a copy of covered software to receive the terms or their URL and every plain-text `Required Notice:` supplied with the software.
 
-The current v0.9.0 release remains an MIT-era release and no release is created by this ADR. **No post-transition Core release may be requested or published until the release packaging path is updated and verified to carry the applicable Perimeter terms/URL and Required Notice with every Perimeter-covered binary/artifact distribution.**
+Core executables also embed the MIT-covered `ContractFS` interoperability material declared in `contract.go`. A post-transition Core binary is therefore a mixed-license distribution: packaging must provide both the applicable PolyForm Perimeter terms/URL plus every `Required Notice:` for Perimeter-covered implementation **and** the MIT license/copyright notice for the embedded interoperability material. Any source/archive/template/generated-user-repository distribution must likewise carry the notices applicable to the material it actually contains.
 
-That future packaging change must preserve Runethread's immutable-release, exact-target, checksum, complete-asset, and post-publication verification gates rather than weakening release safety to satisfy licensing.
+The current v0.9.0 release remains an MIT-era release and no release is created by this ADR. **No post-transition Core release may be requested or published until that mixed-license packaging is implemented and verified.** Until then, the release workflow fails closed by rejecting every requested version other than the already-published v0.9.0 baseline.
+
+The future packaging change that removes this temporary block must be separately reviewed, must update the development-policy guard/self-tests at the same time, and must preserve Runethread's immutable-release, exact-target, checksum, complete-asset, and post-publication verification gates rather than weakening release safety to satisfy licensing.
 
 ### 12. No hosted runtime or provider resource is introduced here
 
@@ -131,7 +133,8 @@ This ADR is a licensing/governance change. It introduces no Cloudflare runtime, 
 - Runethread can monetize material for which it controls the required rights and may offer separate commercial terms.
 - Perimeter-covered implementation must be described as source-available rather than OSI open source; MIT-covered interoperability material remains open source.
 - `runethread/memory-template`, existing user memory repositories, and user-authored data are not silently relicensed by this ADR.
-- A future post-transition binary release has a mandatory license/Required-Notice packaging gate.
+- A future post-transition Core binary/release has a mandatory **mixed-license** packaging gate: Perimeter terms/URL + Required Notice for implementation and MIT license/copyright notice for embedded/distributed interoperability material.
+- Future template/generated-user-repository distributions of MIT interoperability material must propagate the MIT notice through the normal contract/bootstrap/downstream release process rather than modifying current v0.9 repositories opportunistically.
 - A competitor can still use historical MIT material and can independently implement ideas/interfaces to the extent copyright law permits; Perimeter is not a patent or a general noncompetition right over abstract functionality.
 - Contributor governance becomes a prerequisite before material outside source is merged.
 - License enforceability and ownership questions can depend on jurisdiction and facts; material commercial contracts, rights transfers, or enforcement should receive qualified legal review.
@@ -175,15 +178,16 @@ The Core side of the licensing transition is complete only when:
 3. `LICENSE-MIT` preserves the historical Core MIT text and `LICENSING.md` explicitly identifies it as the current license for the permissive interoperability boundary as well as historical material;
 4. `LICENSING.md` distinguishes Perimeter implementation, MIT interoperability/generated-support material, historical MIT rights, and user-owned data without claiming retroactive revocation;
 5. Core README describes the mixed boundary and links the authoritative licensing explanation;
-6. project engineering policy, PR review surface, CODEOWNERS, and development-policy guard protect licensing/rightsholder/contribution/notice changes as deliberate governance work;
+6. project engineering policy, PR review surface, CODEOWNERS, and development-policy guard protect licensing/rightsholder/contribution/notice changes as deliberate governance work, with the standardized `LICENSE` and `LICENSE-MIT` bytes locked exactly;
 7. the current release request remains v0.9.0 and this transition does not publish a new release;
-8. no post-transition Core release can be treated as ready until release packaging is updated/verified to convey the applicable Perimeter terms/URL and Required Notice with covered artifacts;
-9. `runethread/memory-template`, existing user repositories, and user-authored data are not silently relicensed;
-10. Hosted adopts the Perimeter implementation default, explicit current licensor/rightsholder scope, and its own historical MIT boundary through a separate protected PR before any runtime/Worker source is merged;
-11. Hosted documentation records ADR-026 as the controlling licensing decision rather than leaving the long-term model unresolved;
-12. no documentation describes Perimeter-covered implementation as OSI open source;
-13. material third-party contributions remain merge-blocked until an explicit inbound-rights policy exists for the relevant licensing class; and
-14. the Core and Hosted licensing PRs each pass repository validation and the full exact-head adversarial review gate before protected merge.
+8. the release workflow mechanically refuses every requested version other than the already-published v0.9.0 baseline until a separately reviewed packaging change proves both Perimeter and MIT notice delivery for the mixed Core artifacts and updates the policy guard/self-tests;
+9. any future template/generated-user-repository distribution of MIT interoperability material propagates the applicable MIT license/copyright notice through the normal contract/bootstrap/release/downstream gates without licensing user-authored data;
+10. `runethread/memory-template`, existing user repositories, and user-authored data are not silently relicensed;
+11. Hosted adopts the Perimeter implementation default, explicit current licensor/rightsholder scope, and its own historical MIT boundary through a separate protected PR before any runtime/Worker source is merged;
+12. Hosted documentation records ADR-026 as the controlling licensing decision rather than leaving the long-term model unresolved;
+13. no documentation describes Perimeter-covered implementation as OSI open source;
+14. material third-party contributions remain merge-blocked until an explicit inbound-rights policy exists for the relevant licensing class; and
+15. the Core and Hosted licensing PRs each pass repository validation and the full exact-head adversarial review gate before protected merge.
 
 ## Sources checked for the decision
 
