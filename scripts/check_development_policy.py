@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import hashlib
 import re
+import stat
+import subprocess
 import sys
 from pathlib import Path
 
@@ -17,6 +19,7 @@ REQUIRED_FILES = (
     "LICENSE",
     "LICENSE-MIT",
     "LICENSING.md",
+    "README.md",
     "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md",
     "docs/runethread/ENGINEERING_PROCESS.md",
     "docs/runethread/DEVELOPMENT_PIPELINE.md",
@@ -44,6 +47,65 @@ EXACT_FILE_SHA256 = {
 EXACT_GIT_BLOB_SHA1 = {
     ".github/workflows/release.yml": "48c6ad8bef3375216ae2e7b0716f53bc2d861020",
 }
+
+# A readable file that discusses licensing is not allowed to appear silently.
+# Exact membership is deliberately reviewed so future prose, config, scripts, or
+# source strings cannot become a second licensing authority by accident.
+LICENSE_BEARING_TEXT_FILES = frozenset(
+    {
+        ".github/CODEOWNERS",
+        ".github/pull_request_template.md",
+        ".github/workflows/release.yml",
+        "AGENTS.md",
+        "LICENSE",
+        "LICENSE-MIT",
+        "LICENSING.md",
+        "README.md",
+        "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md",
+        "docs/adr/README.md",
+        "docs/runethread/CURRENT_MILESTONE.md",
+        "docs/runethread/DEVELOPMENT_PIPELINE.md",
+        "docs/runethread/ENGINEERING_PROCESS.md",
+        "docs/runethread/ROADMAP.md",
+        "scripts/check-pr-impact.py",
+        "scripts/check_pr_impact_test.py",
+        "scripts/check_development_policy.py",
+        "scripts/check_development_policy_test.py",
+    }
+)
+
+LICENSE_VOCAB_RE = re.compile(
+    r"(?i)(?:"
+    r"\b(?:license|licensed|licenses|licensing|licensor|licensee|licence|licenced|licences|licencing)\b|"
+    r"\brightsholder\b|\bcopyright\b|\bpolyform\b|\bperimeter\b|\bMIT\b|"
+    r"\bsource[- ]available\b|\bopen[- ]source\b|"
+    r"\bcommercial[- ](?:use|model|license|licensing)\b"
+    r")"
+)
+
+# These are intentionally narrow present-tense/global contradictions. Historical
+# MIT statements, exact legal text, and explicitly scoped MIT interoperability
+# statements remain valid and are not rejected by a crude keyword ban.
+FORBIDDEN_GLOBAL_LICENSE_PATTERNS = (
+    (
+        "global MIT-only Runethread claim",
+        re.compile(
+            r"(?i)\brunethread\s+is\s+(?:released|licensed)\s+under[^\n]{0,160}\bMIT(?:\s+License)?\b"
+        ),
+    ),
+    (
+        "global MIT-only Runethread claim",
+        re.compile(r"(?i)\brunethread\s+(?:is|remains)\s+(?:solely\s+|only\s+)?MIT[- ]licensed\b"),
+    ),
+    (
+        "unscoped open-source Runethread claim",
+        re.compile(r"(?i)\brunethread\s+(?:is|remains)\s+(?:an?\s+)?open[- ]source\b"),
+    ),
+    (
+        "blanket Perimeter Runethread claim",
+        re.compile(r"(?i)\b(?:all|entire)\s+Runethread[^\n]{0,160}\bPolyForm\s+Perimeter\b"),
+    ),
+)
 
 VALIDATE_NEEDLES = (
     "permissions:\n  contents: read",
@@ -93,6 +155,8 @@ PROCESS_NEEDLES = (
     "Negative and failure-mode gate",
     "Verification gate on the committed branch",
     "Licensing / rights gate",
+    "Readable licensing consistency is also part of this gate",
+    "every Git-tracked regular file that decodes as UTF-8 text",
     "Core binaries embed MIT-covered `ContractFS` interoperability material",
     "mixed-license distribution",
     "public `runethread/memory-template`",
@@ -105,13 +169,15 @@ PROCESS_NEEDLES = (
 PIPELINE_NEEDLES = (
     "Mandatory semantic scope boundary",
     "Cheap deterministic gates",
+    "repository-wide readable-text licensing consistency gate",
+    "every Git-tracked regular file that decodes as UTF-8 text",
+    "new licensing-bearing readable file",
     "Linux deterministic quality gate",
     "Cross-platform gate",
     "CI self-protection and supply-chain baseline",
     "Licensing / rights gate",
     "Core binaries embed MIT-covered `ContractFS` material",
     "mixed-license distribution",
-    "public `runethread/memory-template`",
     "Draft PR gate",
     "Merge and post-merge gate",
     "Mandatory future-agent behavior",
@@ -140,6 +206,16 @@ ROADMAP_NEEDLES = (
     "then complete Hosted's own protected Perimeter/history transition",
 )
 
+README_NEEDLES = (
+    "mixed licensing boundary",
+    "PolyForm Perimeter License 1.0.1",
+    "source-available",
+    "[MIT License](LICENSE-MIT)",
+    "Historical pre-transition material",
+    "User-authored memory/project data is not licensed to Runethread",
+    "ADR-026",
+)
+
 PR_NEEDLES = (
     "Development infrastructure / CI / engineering policy",
     "Licensing / rights / commercial policy",
@@ -161,9 +237,11 @@ CODEOWNERS_NEEDLES = (
     "/LICENSE @Karageorgiou",
     "/LICENSE-MIT @Karageorgiou",
     "/LICENSING.md @Karageorgiou",
+    "/README.md @Karageorgiou",
     "/docs/adr/ADR-026-runethread-licensing-and-commercial-model.md @Karageorgiou",
     "/docs/runethread/ENGINEERING_PROCESS.md @Karageorgiou",
     "/docs/runethread/DEVELOPMENT_PIPELINE.md @Karageorgiou",
+    "/docs/runethread/ROADMAP.md @Karageorgiou",
     "/.github/pull_request_template.md @Karageorgiou",
     "/.github/workflows/ @Karageorgiou",
     "/internal/trust/ @Karageorgiou",
@@ -180,9 +258,13 @@ LICENSING_NEEDLES = (
     "Permissive interoperability boundary — MIT",
     "Historical MIT material",
     "User repositories and user data",
+    "Readable-text licensing consistency",
+    "every Git-tracked regular file that decodes as UTF-8 text",
+    "two complementary protections",
     "Core binaries also embed the MIT-covered `ContractFS` interoperability material",
     "mixed-license distribution",
     "The public `runethread/memory-template` is already an active distribution",
+    "does not create the underlying MIT grant",
     "No post-transition Core release may be requested or published",
 )
 
@@ -263,6 +345,94 @@ def require_needles(label: str, text: str, needles: tuple[str, ...], errors: lis
             errors.append(f"{label}: missing mandatory policy marker {needle!r}")
 
 
+def regular_repository_files(root: Path, errors: list[str]) -> list[str]:
+    """Return repository-relative regular files, using the Git index when available."""
+    if (root / ".git").exists():
+        try:
+            result = subprocess.run(
+                ["git", "-C", str(root), "ls-files", "--stage", "-z"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except (OSError, subprocess.CalledProcessError) as exc:
+            errors.append(f"repository manifest: cannot enumerate Git-tracked files: {exc}")
+            return []
+
+        paths: list[str] = []
+        for record in result.stdout.split(b"\0"):
+            if not record:
+                continue
+            try:
+                metadata, raw_path = record.split(b"\t", 1)
+                mode, _object_id, stage = metadata.split(b" ", 2)
+            except ValueError:
+                errors.append("repository manifest: malformed git ls-files record")
+                continue
+            if stage != b"0":
+                errors.append("repository manifest: unmerged/non-stage-0 Git index entry is not allowed")
+                continue
+            if mode not in {b"100644", b"100755"}:
+                continue
+            try:
+                rel = raw_path.decode("utf-8", errors="strict")
+            except UnicodeDecodeError:
+                errors.append("repository manifest: tracked regular-file path is not UTF-8")
+                continue
+            path = root / Path(rel)
+            try:
+                current_mode = path.lstat().st_mode
+            except OSError as exc:
+                errors.append(f"{rel}: tracked regular file is unavailable in the working tree: {exc}")
+                continue
+            if not stat.S_ISREG(current_mode):
+                errors.append(f"{rel}: Git tracks a regular file but the working-tree object is not regular")
+                continue
+            paths.append(Path(rel).as_posix())
+        return sorted(set(paths))
+
+    # Self-tests copy only the guarded repository surface into a temporary tree,
+    # so there is intentionally no .git directory there. Walk regular files to
+    # preserve the same readable-text behavior and to let tests add new files.
+    paths = []
+    for path in root.rglob("*"):
+        try:
+            mode = path.lstat().st_mode
+        except OSError as exc:
+            errors.append(f"{path}: cannot inspect test repository file: {exc}")
+            continue
+        if stat.S_ISREG(mode):
+            paths.append(path.relative_to(root).as_posix())
+    return sorted(set(paths))
+
+
+def check_readable_licensing_surface(root: Path, errors: list[str]) -> None:
+    for rel in regular_repository_files(root, errors):
+        path = root / Path(rel)
+        try:
+            data = path.read_bytes()
+        except OSError as exc:
+            errors.append(f"{rel}: cannot read tracked regular file for licensing scan: {exc}")
+            continue
+
+        # NUL-bearing or non-UTF-8 files are not part of the readable-text surface.
+        if b"\0" in data:
+            continue
+        try:
+            text = data.decode("utf-8", errors="strict")
+        except UnicodeDecodeError:
+            continue
+
+        for label, pattern in FORBIDDEN_GLOBAL_LICENSE_PATTERNS:
+            if pattern.search(text):
+                errors.append(f"{rel}: contradictory licensing statement ({label})")
+
+        if LICENSE_VOCAB_RE.search(text) and rel not in LICENSE_BEARING_TEXT_FILES:
+            errors.append(
+                f"{rel}: licensing-bearing readable file is not classified in LICENSE_BEARING_TEXT_FILES"
+            )
+
+
 def check(root: Path) -> list[str]:
     errors: list[str] = []
     for rel in REQUIRED_FILES:
@@ -271,6 +441,7 @@ def check(root: Path) -> list[str]:
 
     gitattributes = read(root, ".gitattributes", errors)
     licensing = read(root, "LICENSING.md", errors)
+    readme = read(root, "README.md", errors)
     adr026 = read(root, "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md", errors)
     validate = read(root, ".github/workflows/validate.yml", errors)
     release = read(root, ".github/workflows/release.yml", errors)
@@ -305,6 +476,7 @@ def check(root: Path) -> list[str]:
     require_needles(".gitattributes", gitattributes, GITATTRIBUTES_NEEDLES, errors)
     require_needles("release.yml", release, RELEASE_NEEDLES, errors)
     require_needles("LICENSING.md", licensing, LICENSING_NEEDLES, errors)
+    require_needles("README.md", readme, README_NEEDLES, errors)
     require_needles("ADR-026", adr026, ADR026_NEEDLES, errors)
     require_needles("CURRENT_MILESTONE.md", milestone, MILESTONE_NEEDLES, errors)
     require_needles("ROADMAP.md", roadmap, ROADMAP_NEEDLES, errors)
@@ -314,6 +486,8 @@ def check(root: Path) -> list[str]:
     require_needles("ENGINEERING_PROCESS.md", process, PROCESS_NEEDLES, errors)
     require_needles("DEVELOPMENT_PIPELINE.md", pipeline, PIPELINE_NEEDLES, errors)
     require_needles("pull_request_template.md", pr_template, PR_NEEDLES, errors)
+
+    check_readable_licensing_surface(root, errors)
 
     return errors
 
