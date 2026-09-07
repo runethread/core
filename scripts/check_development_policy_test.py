@@ -213,9 +213,10 @@ def test_licensing_cannot_drop_readable_text_gate_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / "LICENSING.md"
-        text = path.read_text().replace("Readable-text licensing consistency", "Text consistency", 1)
+        marker = "valid UTF-8 text unless its exact path is deliberately classified"
+        text = path.read_text().replace(marker, "readable text when practical", 1)
         path.write_text(text)
-        require_error(root, "Readable-text licensing consistency")
+        require_error(root, marker)
     finally:
         shutil.rmtree(root)
 
