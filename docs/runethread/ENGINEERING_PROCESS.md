@@ -333,6 +333,8 @@ Before any change that affects license files, rightsholder identity, commercial-
 7. verify every distribution path carries the terms/URL and required notices applicable to its covered artifacts;
 8. if rightsholder scope is unresolved, stop rather than publishing or making an unsupported license claim.
 
+Readable licensing consistency is also part of this gate. The development-policy guard must enumerate every Git-tracked regular file that decodes as UTF-8 text, regardless of extension or directory, and reject known global licensing statements that contradict ADR-026. Any readable file that starts discussing licensing/rightsholder/commercial-model terms must be deliberately classified in the guarded licensing-bearing surface. Files that do not discuss licensing need not repeat licensing boilerplate, while historical legal text and explicitly scoped MIT interoperability statements remain valid rather than being erased by a crude keyword ban.
+
 Core binaries embed MIT-covered `ContractFS` interoperability material. A post-transition Core binary is therefore a mixed-license distribution. No post-transition Core release may be requested or published until packaging is updated and verified to provide both the PolyForm Perimeter terms or URL plus every applicable `Required Notice:` for implementation **and** the MIT license/copyright notice for embedded or otherwise distributed interoperability material. Until that separately reviewed packaging change lands, the release workflow must fail closed for every requested version other than the already-published v0.9.0 baseline, and removing that block requires a coordinated guard/self-test update.
 
 ---
@@ -478,7 +480,7 @@ A deliberate stop is a successful safety outcome, not a failure of progress.
 
 ## 21. Current Phase 2.6 application
 
-Phase 2.5 compatibility hardening is complete. The subsequent ADR-015 contract transition is also complete: Runethread v0.9.0 / contract v9 is the current immutable release, `runethread/memory-template` is migrated and validated at v0.9.0, and the known private memory repository is migrated and validated at v0.9.0 with the intended five managed paths changed and user-owned memory/project/index bytes preserved. ADR-012 through ADR-026 are accepted as architectural/project-governance authority, with ADR-026's repository transitions still requiring protected implementation in both Core and Hosted.
+Phase 2.5 compatibility hardening is complete. The subsequent ADR-015 contract transition is also complete: Runethread v0.9.0 / contract v9 is the current immutable release, `runethread/memory-template` is migrated and validated at v0.9.0, and the known private memory repository is migrated and validated at v0.9.0 with the intended five managed paths changed and user-owned memory/project/index bytes preserved. ADR-012 through ADR-026 are accepted as architectural/project-governance authority. ADR-026's system transition still requires the protected Core transition, the protected public-template MIT notice remediation, and the protected Hosted transition.
 
 The Phase 2.6 architecture freeze is complete and the initial `runethread/hosted` repository safety/bootstrap slice is complete. Hosted main is protected and post-merge validated, but no Worker/runtime, Durable Object, R2 store, GitHub App, hosted mutation API, safety journal, finalizer, auditor/verifier, or publisher implementation exists yet.
 
@@ -486,10 +488,12 @@ Phase 2.6 Memory Write Delivery Pipeline is the current engineering milestone. P
 
 Before hosted runtime implementation proceeds, the pre-implementation sequence is:
 
-1. finish the protected ADR-026 licensing transition in Core and then Hosted, preserving the Perimeter implementation / MIT interoperability / historical-MIT / user-data boundaries;
-2. after Hosted reflects ADR-026, introduce the reproducibly locked TypeScript/Cloudflare developer toolchain and a fail-closed **non-operational Worker shell only**, with lockfile-based install, generated Worker type verification, runtime tests, cross-platform developer-toolchain CI, and npm Dependabot; no provider resource or production deployment is authorized by that slice;
-3. before auth/API implementation, establish an independently reviewed hosted release-identity/release-pipeline baseline that pins what may become a hosted release while keeping deployment disabled until its later security/deployment gate;
-4. only then begin the accepted hosted request/auth/repository-binding and persistence sequence below.
+1. finish the protected ADR-026 licensing transition in Core, preserving the Perimeter implementation / MIT interoperability / historical-MIT / user-data boundaries;
+2. establish basic protected-`main` policy on the public `runethread/memory-template`, then land only the scoped MIT license/copyright notice for the Runethread-authored interoperability material it already distributes; do not modify existing private/user memory repositories merely for notice remediation;
+3. complete Hosted's protected ADR-026 transition, including its Perimeter implementation default and explicit historical-MIT/rightsholder boundary, before any runtime/Worker source is merged;
+4. introduce the reproducibly locked TypeScript/Cloudflare developer toolchain and a fail-closed **non-operational Worker shell only**, with lockfile-based install, generated Worker type verification, runtime tests, cross-platform developer-toolchain CI, and npm Dependabot; no provider resource or production deployment is authorized by that slice;
+5. before auth/API implementation, establish an independently reviewed hosted release-identity/release-pipeline baseline that pins what may become a hosted release while keeping deployment disabled until its later security/deployment gate;
+6. only then begin the accepted hosted request/auth/repository-binding and persistence sequence below.
 
 For Phase 2.6 work:
 
