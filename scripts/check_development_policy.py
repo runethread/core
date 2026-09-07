@@ -85,6 +85,8 @@ PROCESS_NEEDLES = (
     "Negative and failure-mode gate",
     "Verification gate on the committed branch",
     "Licensing / rights gate",
+    "Core binaries embed MIT-covered `ContractFS` interoperability material",
+    "mixed-license distribution",
     "Draft PR review gate",
     "Post-merge gate",
     "Correction / incident protocol",
@@ -98,6 +100,8 @@ PIPELINE_NEEDLES = (
     "Cross-platform gate",
     "CI self-protection and supply-chain baseline",
     "Licensing / rights gate",
+    "Core binaries embed MIT-covered `ContractFS` material",
+    "mixed-license distribution",
     "Draft PR gate",
     "Merge and post-merge gate",
     "Mandatory future-agent behavior",
@@ -108,6 +112,13 @@ PIPELINE_NEEDLES = (
     "go test -race -count=1 ./...",
     "macOS through the platform matrix",
     "Windows through the platform matrix",
+)
+
+MILESTONE_NEEDLES = (
+    "ADR-026 records the accepted Runethread licensing/commercial-model decision",
+    "Core binaries embed MIT-covered `ContractFS` material",
+    "mixed-license distribution",
+    "release workflow rejects every requested version other than the already-published v0.9.0 baseline",
 )
 
 PR_NEEDLES = (
@@ -150,6 +161,8 @@ LICENSING_NEEDLES = (
     "Permissive interoperability boundary — MIT",
     "Historical MIT material",
     "User repositories and user data",
+    "Core binaries also embed the MIT-covered `ContractFS` interoperability material",
+    "mixed-license distribution",
     "No post-transition Core release may be requested or published",
 )
 
@@ -157,7 +170,8 @@ ADR026_NEEDLES = (
     "Status: **Accepted**",
     "PolyForm Perimeter License 1.0.1",
     "portable Memory Contract",
-    "Post-transition release distribution has an explicit notice gate",
+    "Post-transition release distribution has an explicit mixed-license notice gate",
+    "Core executables also embed the MIT-covered `ContractFS` interoperability material",
 )
 
 
@@ -232,6 +246,7 @@ def check(root: Path) -> list[str]:
     agents = read(root, "AGENTS.md", errors)
     process = read(root, "docs/runethread/ENGINEERING_PROCESS.md", errors)
     pipeline = read(root, "docs/runethread/DEVELOPMENT_PIPELINE.md", errors)
+    milestone = read(root, "docs/runethread/CURRENT_MILESTONE.md", errors)
 
     for rel, expected in EXACT_FILE_SHA256.items():
         check_exact_sha256(root, rel, expected, errors)
@@ -254,6 +269,7 @@ def check(root: Path) -> list[str]:
     require_needles("release.yml", release, RELEASE_NEEDLES, errors)
     require_needles("LICENSING.md", licensing, LICENSING_NEEDLES, errors)
     require_needles("ADR-026", adr026, ADR026_NEEDLES, errors)
+    require_needles("CURRENT_MILESTONE.md", milestone, MILESTONE_NEEDLES, errors)
     require_needles("dependabot.yml", dependabot, DEPENDABOT_NEEDLES, errors)
     require_needles("CODEOWNERS", codeowners, CODEOWNERS_NEEDLES, errors)
     require_needles("AGENTS.md", agents, AGENT_NEEDLES, errors)
