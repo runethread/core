@@ -42,13 +42,13 @@ ADR-026 does **not** license user-authored memories, project content, imports, a
 
 ADR-026 also does not silently relicense `runethread/memory-template` or an existing user-owned memory repository as a whole. The current public template and known contract-v9 memory repositories remain pinned to v0.9.0 / MIT-era managed contract material.
 
-When a future release generates or upgrades Runethread-managed files in a user repository, the release must make the applicable managed-file license and required notices available without implying that the same license covers the user's own data.
+When a future release generates, upgrades, templates, or otherwise distributes Runethread-managed MIT interoperability files in a user repository, the distribution must make the MIT license and copyright notice available with those managed files without implying that the same license covers the user's own data. The current contract-v9/template state remains unchanged by this transition; any future notice-propagation change must go through the normal contract/bootstrap/release/downstream gates rather than modifying user repositories opportunistically.
 
 ## Binary and release distribution
 
-PolyForm Perimeter requires downstream recipients of covered software to receive the license terms or their URL and every `Required Notice:` supplied with the software.
+PolyForm Perimeter requires downstream recipients of covered software to receive the license terms or their URL and every `Required Notice:` supplied with the software. Core binaries also embed the MIT-covered `ContractFS` interoperability material from `contract.go`, so a post-transition binary distribution is a **mixed-license distribution** and must also provide the MIT license and copyright notice applicable to that embedded material.
 
-The existing v0.9.0 release remains an MIT-era release. **No post-transition Core release may be requested or published until the release packaging path is updated and verified to carry the applicable Perimeter terms/URL and Required Notice with every Perimeter-covered binary/artifact distribution.** A future release-packaging change must preserve the existing immutable-release and exact-asset verification gates.
+The existing v0.9.0 release remains an MIT-era release. **No post-transition Core release may be requested or published until the release packaging path is updated and verified to carry both (1) the applicable Perimeter terms/URL and every `Required Notice:` for Perimeter-covered implementation and (2) the MIT license/copyright notice for embedded or otherwise distributed interoperability material.** The current release workflow enforces this temporarily by rejecting every requested version other than the already-published v0.9.0 baseline. A future reviewed packaging change must replace that fail-closed gate deliberately and preserve the existing immutable-release and exact-asset verification gates.
 
 ## Current commercial model
 
