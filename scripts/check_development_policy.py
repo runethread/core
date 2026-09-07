@@ -13,6 +13,10 @@ USES_RE = re.compile(r"(?m)^\s*uses:\s*([^\s#]+)")
 REQUIRED_FILES = (
     ".gitattributes",
     "AGENTS.md",
+    "LICENSE",
+    "LICENSE-MIT",
+    "LICENSING.md",
+    "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md",
     "docs/runethread/ENGINEERING_PROCESS.md",
     "docs/runethread/DEVELOPMENT_PIPELINE.md",
     "docs/runethread/CURRENT_MILESTONE.md",
@@ -52,9 +56,11 @@ AGENT_NEEDLES = (
     "ENGINEERING_PROCESS.md",
     "DEVELOPMENT_PIPELINE.md",
     "CURRENT_MILESTONE.md",
+    "LICENSING.md",
     "Validation is read-only",
     "Fail closed",
     "Respect the process/product scope boundary",
+    "Preserve licensing and user-data boundaries",
     "Do not hide platform defects",
 )
 
@@ -65,6 +71,7 @@ PROCESS_NEEDLES = (
     "Forward compatibility gate",
     "Negative and failure-mode gate",
     "Verification gate on the committed branch",
+    "Licensing / rights gate",
     "Draft PR review gate",
     "Post-merge gate",
     "Correction / incident protocol",
@@ -77,6 +84,7 @@ PIPELINE_NEEDLES = (
     "Linux deterministic quality gate",
     "Cross-platform gate",
     "CI self-protection and supply-chain baseline",
+    "Licensing / rights gate",
     "Draft PR gate",
     "Merge and post-merge gate",
     "Mandatory future-agent behavior",
@@ -91,7 +99,9 @@ PIPELINE_NEEDLES = (
 
 PR_NEEDLES = (
     "Development infrastructure / CI / engineering policy",
+    "Licensing / rights / commercial policy",
     "Scope-boundary decision",
+    "Licensing / rights gate",
     "Mandatory pipeline on exact head",
     "No platform was removed/skipped/weakened to obtain green CI",
     "required final `validate` job passed on the exact reviewed head",
@@ -105,6 +115,10 @@ DEPENDABOT_NEEDLES = (
 CODEOWNERS_NEEDLES = (
     "/.gitattributes @Karageorgiou",
     "/AGENTS.md @Karageorgiou",
+    "/LICENSE @Karageorgiou",
+    "/LICENSE-MIT @Karageorgiou",
+    "/LICENSING.md @Karageorgiou",
+    "/docs/adr/ADR-026-runethread-licensing-and-commercial-model.md @Karageorgiou",
     "/docs/runethread/ENGINEERING_PROCESS.md @Karageorgiou",
     "/docs/runethread/DEVELOPMENT_PIPELINE.md @Karageorgiou",
     "/.github/pull_request_template.md @Karageorgiou",
@@ -116,6 +130,34 @@ CODEOWNERS_NEEDLES = (
 GITATTRIBUTES_NEEDLES = (
     "* text=auto eol=lf",
     "*.exe binary",
+)
+
+LICENSE_NEEDLES = (
+    "Required Notice: Copyright 2026 George Karageorgiou",
+    "# PolyForm Perimeter License 1.0.1",
+    "## Noncompete",
+    "providing to others any product that competes with the software",
+)
+
+MIT_LICENSE_NEEDLES = (
+    "MIT License",
+    "Copyright (c) 2026 George Karageorgiou",
+    "Permission is hereby granted, free of charge",
+)
+
+LICENSING_NEEDLES = (
+    "Implementation default — PolyForm Perimeter 1.0.1",
+    "Permissive interoperability boundary — MIT",
+    "Historical MIT material",
+    "User repositories and user data",
+    "No post-transition Core release may be requested or published",
+)
+
+ADR026_NEEDLES = (
+    "Status: **Accepted**",
+    "PolyForm Perimeter License 1.0.1",
+    "portable Memory Contract",
+    "Post-transition release distribution has an explicit notice gate",
 )
 
 
@@ -169,6 +211,10 @@ def check(root: Path) -> list[str]:
             errors.append(f"{rel}: required development-safety file is missing")
 
     gitattributes = read(root, ".gitattributes", errors)
+    license_text = read(root, "LICENSE", errors)
+    mit_license = read(root, "LICENSE-MIT", errors)
+    licensing = read(root, "LICENSING.md", errors)
+    adr026 = read(root, "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md", errors)
     validate = read(root, ".github/workflows/validate.yml", errors)
     release = read(root, ".github/workflows/release.yml", errors)
     dependabot = read(root, ".github/dependabot.yml", errors)
@@ -193,6 +239,10 @@ def check(root: Path) -> list[str]:
         errors.append("release.yml: release publication requires explicit contents: write")
 
     require_needles(".gitattributes", gitattributes, GITATTRIBUTES_NEEDLES, errors)
+    require_needles("LICENSE", license_text, LICENSE_NEEDLES, errors)
+    require_needles("LICENSE-MIT", mit_license, MIT_LICENSE_NEEDLES, errors)
+    require_needles("LICENSING.md", licensing, LICENSING_NEEDLES, errors)
+    require_needles("ADR-026", adr026, ADR026_NEEDLES, errors)
     require_needles("dependabot.yml", dependabot, DEPENDABOT_NEEDLES, errors)
     require_needles("CODEOWNERS", codeowners, CODEOWNERS_NEEDLES, errors)
     require_needles("AGENTS.md", agents, AGENT_NEEDLES, errors)
