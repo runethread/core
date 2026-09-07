@@ -127,7 +127,20 @@ def test_release_license_gate_bypass_fails() -> None:
         path = root / ".github/workflows/release.yml"
         text = path.read_text().replace('if [ "$VERSION" != "v0.9.0" ]; then', "if false; then", 1)
         path.write_text(text)
-        require_error(root, 'if [ "$VERSION" != "v0.9.0" ]; then')
+        require_error(root, ".github/workflows/release.yml: exact protected file Git blob mismatch")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_release_license_gate_semantic_bypass_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / ".github/workflows/release.yml"
+        text = path.read_text()
+        marker = '          if [ "$VERSION" != "v0.9.0" ]; then\n'
+        text = text.replace(marker, '          VERSION="v0.9.0"\n' + marker, 1)
+        path.write_text(text)
+        require_error(root, ".github/workflows/release.yml: exact protected file Git blob mismatch")
     finally:
         shutil.rmtree(root)
 
