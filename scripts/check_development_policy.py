@@ -21,6 +21,7 @@ REQUIRED_FILES = (
     "docs/runethread/ENGINEERING_PROCESS.md",
     "docs/runethread/DEVELOPMENT_PIPELINE.md",
     "docs/runethread/CURRENT_MILESTONE.md",
+    "docs/runethread/ROADMAP.md",
     ".github/pull_request_template.md",
     ".github/workflows/validate.yml",
     ".github/workflows/release.yml",
@@ -129,6 +130,14 @@ MILESTONE_NEEDLES = (
     "mixed-license distribution",
     "release workflow rejects every requested version other than the already-published v0.9.0 baseline",
     "Remediate the public `runethread/memory-template` MIT notice",
+)
+
+ROADMAP_NEEDLES = (
+    "ADR-026 **system licensing transition**",
+    "establish basic protected-`main` policy on `runethread/memory-template`",
+    "scoped MIT license/copyright notice",
+    "Existing private/user memory repositories are not modified merely to add a notice",
+    "then complete Hosted's own protected Perimeter/history transition",
 )
 
 PR_NEEDLES = (
@@ -272,6 +281,7 @@ def check(root: Path) -> list[str]:
     process = read(root, "docs/runethread/ENGINEERING_PROCESS.md", errors)
     pipeline = read(root, "docs/runethread/DEVELOPMENT_PIPELINE.md", errors)
     milestone = read(root, "docs/runethread/CURRENT_MILESTONE.md", errors)
+    roadmap = read(root, "docs/runethread/ROADMAP.md", errors)
 
     for rel, expected in EXACT_FILE_SHA256.items():
         check_exact_sha256(root, rel, expected, errors)
@@ -297,6 +307,7 @@ def check(root: Path) -> list[str]:
     require_needles("LICENSING.md", licensing, LICENSING_NEEDLES, errors)
     require_needles("ADR-026", adr026, ADR026_NEEDLES, errors)
     require_needles("CURRENT_MILESTONE.md", milestone, MILESTONE_NEEDLES, errors)
+    require_needles("ROADMAP.md", roadmap, ROADMAP_NEEDLES, errors)
     require_needles("dependabot.yml", dependabot, DEPENDABOT_NEEDLES, errors)
     require_needles("CODEOWNERS", codeowners, CODEOWNERS_NEEDLES, errors)
     require_needles("AGENTS.md", agents, AGENT_NEEDLES, errors)
