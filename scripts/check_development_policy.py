@@ -37,6 +37,13 @@ EXACT_FILE_SHA256 = {
     "LICENSE-MIT": "a648e5f1a60155f62062b88d4c5758306a119a63962233b40a9bb2d48114bef4",
 }
 
+# The temporary post-v0.9.0 release barrier is itself safety-critical. Lock the
+# complete workflow bytes, not just marker strings, until a reviewed mixed-license
+# packaging change deliberately replaces the barrier and updates this guard/tests.
+EXACT_GIT_BLOB_SHA1 = {
+    ".github/workflows/release.yml": "48c6ad8bef3375216ae2e7b0716f53bc2d861020",
+}
+
 VALIDATE_NEEDLES = (
     "permissions:\n  contents: read",
     "go mod verify",
@@ -87,6 +94,7 @@ PROCESS_NEEDLES = (
     "Licensing / rights gate",
     "Core binaries embed MIT-covered `ContractFS` interoperability material",
     "mixed-license distribution",
+    "public `runethread/memory-template`",
     "Draft PR review gate",
     "Post-merge gate",
     "Correction / incident protocol",
@@ -102,6 +110,7 @@ PIPELINE_NEEDLES = (
     "Licensing / rights gate",
     "Core binaries embed MIT-covered `ContractFS` material",
     "mixed-license distribution",
+    "public `runethread/memory-template`",
     "Draft PR gate",
     "Merge and post-merge gate",
     "Mandatory future-agent behavior",
@@ -119,6 +128,7 @@ MILESTONE_NEEDLES = (
     "Core binaries embed MIT-covered `ContractFS` material",
     "mixed-license distribution",
     "release workflow rejects every requested version other than the already-published v0.9.0 baseline",
+    "Remediate the active public `runethread/memory-template` MIT notice surface",
 )
 
 PR_NEEDLES = (
@@ -163,6 +173,7 @@ LICENSING_NEEDLES = (
     "User repositories and user data",
     "Core binaries also embed the MIT-covered `ContractFS` interoperability material",
     "mixed-license distribution",
+    "active public `runethread/memory-template`",
     "No post-transition Core release may be requested or published",
 )
 
@@ -172,6 +183,7 @@ ADR026_NEEDLES = (
     "portable Memory Contract",
     "Post-transition release distribution has an explicit mixed-license notice gate",
     "Core executables also embed the MIT-covered `ContractFS` interoperability material",
+    "active public `runethread/memory-template`",
 )
 
 
@@ -193,6 +205,19 @@ def check_exact_sha256(root: Path, rel: str, expected: str, errors: list[str]) -
         return
     if actual != expected:
         errors.append(f"{rel}: exact legal text SHA-256 mismatch: got {actual}, want {expected}")
+
+
+def check_exact_git_blob_sha1(root: Path, rel: str, expected: str, errors: list[str]) -> None:
+    path = root / rel
+    try:
+        data = path.read_bytes()
+    except OSError as exc:
+        errors.append(f"{rel}: cannot hash protected file: {exc}")
+        return
+    payload = f"blob {len(data)}\0".encode("ascii") + data
+    actual = hashlib.sha1(payload, usedforsecurity=False).hexdigest()
+    if actual != expected:
+        errors.append(f"{rel}: exact protected file Git blob mismatch: got {actual}, want {expected}")
 
 
 def check_action_pins(rel: str, text: str, errors: list[str]) -> None:
@@ -250,6 +275,8 @@ def check(root: Path) -> list[str]:
 
     for rel, expected in EXACT_FILE_SHA256.items():
         check_exact_sha256(root, rel, expected, errors)
+    for rel, expected in EXACT_GIT_BLOB_SHA1.items():
+        check_exact_git_blob_sha1(root, rel, expected, errors)
 
     if "pull_request_target:" in validate:
         errors.append("validate.yml: pull_request_target is forbidden for validation CI")
