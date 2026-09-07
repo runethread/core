@@ -1,127 +1,106 @@
 # Runethread licensing
 
-Runethread uses a **mixed licensing boundary** so the implementation can be source-available without making the portable memory protocol or user-owned repositories commercially restrictive.
+Runethread uses a **mixed licensing boundary**. The purpose is to keep the implementation source-available while preserving a deliberately narrow permissive interoperability surface. **Perimeter is the default everywhere else.** No repository name, directory, output pathname, generated-file role, or future feature category expands the MIT exception by implication.
 
 ## Implementation default — PolyForm Perimeter 1.0.1
 
-Unless material is explicitly included in the narrow MIT interoperability exception below or carries its own explicit license, current Runethread-owned source in this `runethread/core` repository for which the licensor controls the necessary licensing rights is offered under the **PolyForm Perimeter License 1.0.1**. See [`LICENSE`](LICENSE).
+Current Runethread-owned implementation material in `runethread/core` for which the applicable licensor controls the necessary rights is offered under the **PolyForm Perimeter License 1.0.1** unless it falls inside the exact MIT exception recorded below or carries another explicit reviewed license. See [`LICENSE`](LICENSE).
 
-The current licensor for that Runethread-owned implementation material is **George Karageorgiou**. The GitHub organization name `runethread` is not treated as a separate legal rights holder merely because it owns repositories.
+The current stated licensor for that Runethread-owned implementation material is **George Karageorgiou**. GitHub repository or organization ownership is not itself proof of copyright ownership or a relicensing grant.
 
-`runethread/hosted` must adopt the same Perimeter implementation default through its own reviewed licensing transition before any hosted runtime/Worker source is merged. This Core document does not claim that Hosted has already completed that transition.
+`runethread/hosted` must perform its own protected transition before any runtime/Worker source is merged there. This Core policy does not pretend that Hosted has already completed that transition.
 
-## Permissive interoperability boundary — MIT
+## Permissive interoperability boundary — exact MIT exception
 
-The MIT exception is intentionally **closed and enumerated**. Perimeter is the default everywhere else. Repository location, a file's apparent purpose, future membership in a contract/bootstrap mechanism, or output from a Runethread tool does **not** automatically place material under MIT.
+The prospective MIT exception is **closed and enumerated** through [`LICENSING_BOUNDARY.json`](LICENSING_BOUNDARY.json), which is the **single machine-readable authority** for its current exact membership and byte-bound outputs. Human prose intentionally does not maintain a second independent path list.
 
-### Exact Core file allowlist
+The manifest is byte-locked by the development-policy guard. Its current classes are:
 
-Only the following current Core repository files are inside the MIT interoperability exception:
+- the exact 19 operational-contract paths that must equal both `ContractPaths()` and the resolved `ContractFS` embed set;
+- the exact current bytes of `runethread-bootstrap.json`, which is the machine-readable bootstrap interface;
+- exact path + exact SHA-256 identities for the Runethread-authored generated support/scaffold bytes that may be copied into a memory repository;
+- two zero-byte `.gitkeep` placeholders recorded separately as non-substantive generated placeholders rather than as a pathname-based software-license category.
 
-- `MEMORY_PROTOCOL.md`
-- `schema/memory-item.schema.json`
-- `docs/MEMORY_SCHEMA.md`
-- `docs/MEMORY_CONTENT_FORMAT.md`
-- `docs/TAXONOMY.md`
-- `docs/REPOSITORY_VALIDATION.md`
-- `docs/USER_COMMANDS.md`
-- `docs/EXTENDING_RUNETHREAD.md`
-- `docs/TRUST_MODEL.md`
-- `docs/SOURCES.md`
-- `docs/INDEX_FORMAT.md`
-- `templates/fact.md`
-- `templates/preference.md`
-- `templates/decision.md`
-- `templates/state.md`
-- `templates/open_loop.md`
-- `templates/correction.md`
-- `templates/milestone.md`
-- `templates/reference.md`
-- `AI_SETUP.md`
-- `runethread-bootstrap.json`
+A path not present in the manifest is not prospectively MIT merely because it looks like protocol, bootstrap, documentation, generated output, template content, or interoperability material. A path present in an exact-byte map is covered only for the pinned bytes. Changing those bytes requires an explicit boundary review and coordinated manifest/guard/test update before the new bytes may be distributed under the exception.
 
-The first nineteen paths above are the current operational-contract set. **`ContractPaths()` does not define or enlarge the MIT license boundary.** The licensing guard independently pins the exact MIT contract allowlist and requires both `ContractPaths()` and the resolved `ContractFS` embed set to match it. Adding, removing, renaming, or otherwise changing membership requires an explicit licensing/contract-packaging review and coordinated policy update; absent that reviewed update, a new Core file remains under the Perimeter default and must not be exported as MIT interoperability material.
+The applicable MIT text is preserved in [`LICENSE-MIT`](LICENSE-MIT).
 
-No Go implementation file, Python/script implementation file, internal runtime package, test implementation, Core CI/release workflow, Hosted source, finalizer, auditor, publisher, mutation engine, index implementation, validation implementation, trust implementation, or other executable/product implementation source is included merely because it supports or consumes these files.
+### Contract exception
 
-### Narrow generated-output exception
+The exact contract set is intentionally permissive so independent clients and assistants can implement the Runethread memory protocol. `ContractPaths()` does not define or enlarge the MIT license boundary. During the current frozen contract-v9 state, `contract.go` is itself byte-locked by policy so a source-text parser cannot be spoofed without first tripping the protected-file lock.
 
-Runethread also grants MIT terms to the **Runethread-authored generated support bytes themselves** when supported `runethread init` or `runethread upgrade` flows emit managed support material into a memory repository at these exact paths:
+Future contract changes remain subject to the normal contract version/release/migration review **and** an explicit licensing-boundary review. No Go implementation file, Python implementation, mutation/index/validation/trust engine, release workflow, Hosted source, finalizer, auditor, publisher, or other product implementation becomes MIT merely because it consumes or produces contract material.
 
-- `.gitattributes`
-- `README.md`
-- `.github/workflows/validate.yml`
-- `.runethread/config.json`
-- `.runethread/lock.json`
+### Bootstrap interface
 
-This is an output exception, not a source-code exception. The Core generator/runtime source that produces those bytes remains under the Perimeter implementation default. Arbitrary user-authored content at the same path is not licensed to Runethread and is not converted to MIT by the pathname. Empty placeholders and user/derived data such as memories, projects, attachments, and generated indexes are not swept into the software-license grant by this exception.
+`runethread-bootstrap.json` remains the narrowly permissive machine-readable bootstrap interface at its exact currently pinned bytes.
 
-A future generated support path or other export is **not** MIT automatically. It requires explicit review and an update to this closed boundary before distribution under MIT.
+**AI_SETUP.md is not part of the prospective MIT exception.** Its pre-transition versions retain whatever historical MIT rights were already granted, but future Runethread-authored changes to `AI_SETUP.md` follow the Perimeter implementation/documentation default unless a later reviewed decision says otherwise. This prevents a detailed human/agent onboarding playbook from becoming an automatically expanding permissive implementation surface.
 
-The MIT terms are in [`LICENSE-MIT`](LICENSE-MIT). This split intentionally lets other clients and assistants understand, copy, redistribute, and implement the Runethread memory interoperability layer without receiving a permissive license to reuse post-transition Perimeter-covered Core or Hosted implementation code in a competing product.
+### Exact-byte generated-output exception
+
+The generated-output exception applies only to the exact Runethread-authored byte identities recorded in `LICENSING_BOUNDARY.json`. This is an output exception, not a source-code exception, and the path alone carries no license.
+
+`internal/starter/output_identity_test.go` independently runs `starter.Init()` in a fresh temporary repository, removes the exact contract paths from consideration, and proves that every remaining generated file is exactly one of the manifest-pinned outputs/placeholders with the expected SHA-256. A new generated path, a changed generated byte sequence, or an unclassified scaffold therefore fails before it can silently inherit MIT treatment.
+
+User-authored content later written at one of those same pathnames is not licensed to Runethread and is not converted to MIT by the pathname. User-derived indexes likewise do not acquire a Runethread license merely because the initial empty scaffold at that path had a pinned permissive grant.
+
+## Public memory template
+
+The public `runethread/memory-template` is an implementation-free distribution surface that currently contains exact Runethread-authored interoperability/scaffold bytes plus empty placeholders. **The repository as a whole is not declared MIT by ADR-026.** Only the exact material covered by the historical grants or the current `LICENSING_BOUNDARY.json` exception has the corresponding MIT grant; later user-authored data or unrelated future files do not inherit MIT from repository membership.
+
+Before template notice remediation, establish basic protected-`main` policy on `runethread/memory-template`. Then land a scoped MIT license/copyright notice through protected review without changing the contract-v9 managed bytes/lock identity merely to add the notice. Existing private/user repositories are not modified solely for notice remediation.
+
+Before any later Core release is unblocked, the versioned starter/upgrader/release path must make the applicable MIT notice available with the exact managed interoperability material it generates or upgrades.
 
 ## Historical MIT material
 
-Runethread was originally distributed under the MIT License. Existing MIT grants are not revoked.
+Runethread was initially distributed under MIT. Existing MIT grants are not revoked, narrowed, or rewritten by this transition.
 
-For `runethread/core`, the canonical default-license transition occurs when protected `main` first adopts ADR-026 and this licensing state. Public development-branch snapshots that already contain newly authored Perimeter-designated material are offered under the license terms stated in those snapshots for that new material; publishing such a branch does not revoke or narrow MIT rights already granted to pre-transition material.
+The protected `main` transition is the canonical project boundary for future default licensing on `main`. Public development-branch history requires a separate factual note: development snapshots before commit `4bd5279a91ca894f6ccb13db91360f6ba95b6576` still had the MIT root license even though some draft transition documents had already appeared. ADR-026 therefore does not attempt to retroactively narrow any rights that may have arisen from those snapshots. Commit `4bd5279a91ca894f6ccb13db91360f6ba95b6576` is the **first public development-branch snapshot whose root license is Perimeter**.
 
-All Core releases published before the canonical `main` transition, including v0.9.0 and earlier releases, remain available under the MIT terms under which they were released. The historical grant also continues to apply to pre-transition material that a recipient obtained under MIT, including unchanged portions that may still appear in a later source tree. Relicensing the current repository does not make those previously granted MIT rights disappear.
+All Core releases published before the protected-main transition, including v0.9.0 and earlier, retain the MIT terms under which they were published. Historical MIT rights also continue for pre-transition material a recipient obtained under MIT, including unchanged portions that may remain in later trees.
 
-Post-transition Runethread-authored changes to files covered by the Perimeter implementation default are not automatically licensed under the historical MIT grant. A recipient may continue using older MIT-covered material under MIT, but does not obtain MIT rights to later Perimeter-only changes merely because those changes descend from the same Git history.
+Later Runethread-authored changes offered only under Perimeter are not automatically MIT merely because they descend from files that had an older MIT revision.
 
-`LICENSE-MIT` therefore serves both as the preserved historical Core MIT text and as the current license notice for the explicit interoperability exception above.
+## User data
 
-## User repositories and user data
+ADR-026 does not grant Runethread rights in user-authored memories, project content, imports, attachments, or other user-owned data merely because Runethread stores, indexes, validates, transports, or processes that data.
 
-ADR-026 does **not** license user-authored memories, project content, imports, attachments, or other user-owned data to Runethread. No such right is granted merely because Runethread tooling stores, indexes, validates, transports, or processes that data.
+## Readable-text consistency
 
-The public `runethread/memory-template` is deliberately an **MIT interoperability/bootstrap repository, not an implementation repository**. Its role must remain limited to portable contract/bootstrap/support material and non-user placeholder structure. Valuable Runethread implementation code must stay in Perimeter-covered implementation repositories rather than being moved into the MIT template.
+Licensing consistency is repository-wide. The development-policy guard enumerates Git-tracked regular files, rejects unclassified non-UTF-8/NUL/non-regular escape surfaces, classifies readable files that begin making licensing/rightsholder/commercial-policy statements, and rejects known contradictory global claims. Faithful historical wording may bypass current-claim checks only through an exact path + exact SHA-256 historical exception.
 
-The public template is already an active distribution of Runethread-authored MIT interoperability material. After the protected Core ADR-026 transition, first establish basic protected-`main` policy on the template, then land its scoped MIT license/copyright notice through its own protected, reviewed change. That notice remediation does not create the underlying MIT grant, license user-authored memory/project data, or change the contract-v9 managed contract bytes or lock identity.
+The authoritative legal/policy surface is `LICENSE`, `LICENSE-MIT`, this file, ADR-026, and the exact machine boundary manifest. Other documents may summarize but do not enlarge the exception.
 
-Existing user-owned/private memory repositories are **not** modified merely to add a notice file. The immutable v0.9.0 starter/upgrader behavior remains historical evidence. Before any later Core release is unblocked, the versioned starter/upgrader/release path must make the MIT license/copyright notice available with Runethread-managed MIT interoperability material it generates or upgrades, using the normal bootstrap/version/release/downstream gates rather than opportunistic user-repository edits.
+## CI self-protection limitation
 
-## Readable-text licensing consistency
+The current required `validate` check is produced by a workflow stored in the pull request itself. The development-policy guard therefore exact-locks the current `validate.yml` bytes to catch accidental drift, but a malicious same-PR edit could theoretically remove the very command that runs that guard. GitHub's current Core ruleset does not provide an independent immutable workflow body.
 
-Licensing consistency is a repository-wide text/content invariant, not a convention limited to `LICENSE`, this file, or the current planning documents.
-
-Core CI enumerates the Git-tracked manifest. A tracked regular file must be valid UTF-8 text unless its exact path is deliberately classified in the reviewed binary/non-text allowlist. The current Core tree requires no such binary exception. NUL-bearing or invalid-UTF-8 regular files therefore fail closed by default, and tracked symlinks/submodules/other non-regular objects are not silently skipped. A future genuine binary or non-regular tracked object must receive an explicit reviewed exception rather than becoming an invisible licensing-text bypass.
-
-If tracked UTF-8 text contains licensing/rightsholder/commercial-model vocabulary, it must belong to the deliberately classified licensing-bearing text surface. The vocabulary includes license/licensor terms as well as copyright, copyleft, patent, trademark, source-available/open-source, commercial/noncommercial, dual/relicensing, proprietary/public-domain, and equivalent explicit rights-policy markers. A new readable file that begins discussing those subjects therefore fails closed until its role is reviewed and classified.
-
-The same scan rejects known contradictory global claims wherever they appear, including stale present-tense statements that make all of Runethread MIT-only or describe the Perimeter-covered implementation as open source. Historical licensing/source fixtures are not exempted by a broad directory rule: if a faithful historical fixture needs to preserve wording that would otherwise look stale, the guard permits only an **exact path + exact SHA-256** historical-text exception. Changing the fixture bytes invalidates that exception and requires review.
-
-The authoritative licensing files and required human/agent entrypoints are also checked for positive markers, so a file cannot evade review simply by deleting all licensing language. This gives the repository complementary protections: positive assertions on the files that must explain policy, a closed MIT allowlist, exact legal-text locks, and a repository-wide contradiction/classification scan. Files unrelated to licensing do **not** need boilerplate licensing prose merely to pass the guard.
-
-`runethread/hosted` must adopt an equivalent repository-local consistency guard as part of its ADR-026 transition. The public `runethread/memory-template` remains deliberately smaller: it stays an implementation-free MIT interoperability/bootstrap repository, its notice is landed through protected review, and existing private/user repositories are not swept or relicensed by Core CI.
+For that reason workflow/policy changes are never trusted solely because their own CI is green. The mandatory **exact-head adversarial review** must compare safety-critical workflow/policy changes against the protected base before merge. This limitation is explicit rather than hidden behind a claim that CI can prove its own integrity.
 
 ## Binary and release distribution
 
-PolyForm Perimeter requires downstream recipients of covered software to receive the license terms or their URL and every `Required Notice:` supplied with the software. Core binaries also embed the exact MIT-listed operational-contract files through `ContractFS`, so a post-transition binary distribution is a **mixed-license distribution** and must also provide the MIT license and copyright notice applicable to that embedded material.
+PolyForm Perimeter requires recipients of covered software to receive the terms or their URL and every `Required Notice:` supplied with the software. Core binaries also embed the exact MIT-listed operational-contract files through `ContractFS`, so a post-transition binary is a **mixed-license distribution** and must also carry the applicable MIT license/copyright notice for those embedded bytes.
 
-The existing v0.9.0 release remains an MIT-era release. **No post-transition Core release may be requested or published until the release packaging path is updated and verified to carry both (1) the applicable Perimeter terms/URL and every `Required Notice:` for Perimeter-covered implementation and (2) the MIT license/copyright notice for embedded or otherwise distributed interoperability material.** The current release workflow enforces this temporarily by rejecting every requested version other than the already-published v0.9.0 baseline. A future reviewed packaging change must replace that fail-closed gate deliberately and preserve the existing immutable-release and exact-asset verification gates.
+The existing v0.9.0 release remains an MIT-era release. **No post-transition Core release may be requested or published** until a separately reviewed packaging change proves delivery of both the applicable Perimeter terms/URL + Required Notice and the MIT notice for embedded/distributed interoperability material. The current release workflow remains byte-locked and fails closed above v0.9.0 until that work exists.
 
-## Current commercial model
+## Commercial model
 
-PolyForm Perimeter permits use, modification, and distribution for permitted purposes while excluding use of the licensed software to provide others a product that competes with the software.
+Perimeter-covered implementation is **source-available**, not OSI-approved open source. The exact MIT exception remains open source under MIT.
 
-Implementation material covered by PolyForm Perimeter is therefore **source-available**, not OSI-approved open source. The explicitly MIT-licensed interoperability material remains open-source under MIT.
+The applicable rightsholder may monetize Runethread through hosted services, subscriptions, advertising, sponsorship, support, partnerships, separate commercial licenses, or other models. ADR-026 does not commit the project to one revenue model.
 
-The licensor may separately offer commercial licenses, exceptions, partnerships, or other terms. Runethread's own monetization model is not restricted to any one mechanism and may include hosted service revenue, subscriptions, advertising, sponsorship, support, or separate commercial licensing.
+## Independent implementations and branding
 
-## Independent implementations and trademarks
+The software licenses govern rights in licensed Runethread material. They do not create copyright protection for ideas, facts, functionality, or other uncopyrightable material. An independently created compatible implementation does not become Runethread-licensed software merely because it implements compatible concepts or interfaces.
 
-The software licenses govern rights in the licensed Runethread material. They do not purport to create copyright protection for ideas, facts, functionality, or other material that copyright law does not protect, and they do not convert an independently created implementation into Runethread-licensed software merely because it implements compatible concepts or interfaces.
+Software licensing also does not grant rights to present an independent product as official Runethread. Trademark/branding policy may be documented separately.
 
-Software licensing also does not grant rights to represent an independent product as official Runethread. Branding and trademark policy may be documented separately.
+## Contributions and rights
 
-## Contributions and licensing rights
-
-Repository ownership and Git commit metadata are evidence, not a substitute for copyright ownership or an inbound rights grant. Runethread may license only material for which the applicable rightsholder has granted the necessary rights.
-
-Before material third-party source contributions are merged, Runethread must adopt an explicit inbound-contribution policy that preserves the rights required by the contribution's target licensing class. For Perimeter-covered implementation, that policy must preserve the project's intended source-available model and any separately offered commercial licensing. A contribution must not be merged on the assumption that repository ownership or a DCO-style origin certification automatically grants relicensing rights.
+Before material third-party source contributions are merged, Runethread must adopt an explicit inbound-rights policy appropriate to the target licensing class and any intended separate commercial licensing. Repository ownership, merge access, commit metadata, or a DCO-style origin certification alone must not be treated as an automatic relicensing grant.
 
 ## Legal review
 
-ADR-026 is an engineering and product-governance decision, not legal advice. Before material commercial contracts, corporate rights transfers, license enforcement, or other high-consequence legal action, the relevant licensing and ownership terms should be reviewed by qualified legal counsel for the applicable jurisdiction.
+ADR-026 is an engineering and product-governance decision, not legal advice. Material commercial contracts, corporate rights transfers, enforcement, or other high-consequence legal action should receive qualified legal review for the applicable jurisdiction.

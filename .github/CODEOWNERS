@@ -6,6 +6,7 @@
 /LICENSE @Karageorgiou
 /LICENSE-MIT @Karageorgiou
 /LICENSING.md @Karageorgiou
+/LICENSING_BOUNDARY.json @Karageorgiou
 /README.md @Karageorgiou
 /docs/adr/ADR-026-runethread-licensing-and-commercial-model.md @Karageorgiou
 /docs/adr/README.md @Karageorgiou
@@ -18,6 +19,7 @@
 /.github/dependabot.yml @Karageorgiou
 /.github/CODEOWNERS @Karageorgiou
 /scripts/check* @Karageorgiou
+/internal/starter/output_identity_test.go @Karageorgiou
 /internal/trust/ @Karageorgiou
 /internal/upgrader/ @Karageorgiou
 /schema/ @Karageorgiou

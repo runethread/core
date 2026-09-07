@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import stat
 import subprocess
@@ -11,6 +12,7 @@ import sys
 from pathlib import Path
 
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
+SHA256 = re.compile(r"^[0-9a-f]{64}$")
 USES_RE = re.compile(r"(?m)^\s*uses:\s*([^\s#]+)")
 
 REQUIRED_FILES = (
@@ -19,8 +21,10 @@ REQUIRED_FILES = (
     "LICENSE",
     "LICENSE-MIT",
     "LICENSING.md",
+    "LICENSING_BOUNDARY.json",
     "README.md",
     "contract.go",
+    "runethread-bootstrap.json",
     "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md",
     "docs/adr/README.md",
     "docs/runethread/ENGINEERING_PROCESS.md",
@@ -32,26 +36,35 @@ REQUIRED_FILES = (
     ".github/workflows/release.yml",
     ".github/dependabot.yml",
     ".github/CODEOWNERS",
+    "internal/starter/output_identity_test.go",
     "scripts/check-pr-impact.py",
     "scripts/check_pr_impact_test.py",
     "scripts/check_development_policy.py",
     "scripts/check_development_policy_test.py",
 )
 
-EXACT_FILE_SHA256 = {
+EXACT_LEGAL_SHA256 = {
     "LICENSE": "bb1d1de338bdbe282f151bf54d6bb6ad98ad37b9592539461fb51ff4bcd4e1c3",
     "LICENSE-MIT": "a648e5f1a60155f62062b88d4c5758306a119a63962233b40a9bb2d48114bef4",
 }
 
-# The temporary post-v0.9.0 release barrier is itself safety-critical. Lock the
-# complete workflow bytes, not just marker strings, until a reviewed mixed-license
-# packaging change deliberately replaces the barrier and updates this guard/tests.
-EXACT_GIT_BLOB_SHA1 = {
-    ".github/workflows/release.yml": "48c6ad8bef3375216ae2e7b0716f53bc2d861020",
+# This manifest is the single machine-readable authority for the closed
+# permissive exception. Human policy refers to it instead of duplicating lists.
+EXACT_POLICY_SHA256 = {
+    "LICENSING_BOUNDARY.json": "0c00008d3e014078792c32285a3705a8c47362c850aec08a2d5f49fd5f680f14",
 }
 
-# The Core MIT exception is closed and independently enumerated. ContractPaths
-# and ContractFS must match this set; neither is allowed to define/expand it.
+# These bytes are deliberately frozen at this transition. A future reviewed
+# change must update the owning policy/test in the same PR. Locking contract.go
+# makes the source-text ContractPaths parser non-spoofable for this frozen v9
+# state. Locking validate.yml catches accidental self-protection drift, while
+# exact-head review remains necessary because a PR controls its own workflow.
+EXACT_GIT_BLOB_SHA1 = {
+    ".github/workflows/release.yml": "48c6ad8bef3375216ae2e7b0716f53bc2d861020",
+    ".github/workflows/validate.yml": "465b798f6594e3bf11cc244cf40a75241cf1fe31",
+    "contract.go": "eb884392ec7aaa1eab9c417588a0fb6c722e82da",
+}
+
 MIT_CONTRACT_PATHS = frozenset(
     {
         "MEMORY_PROTOCOL.md",
@@ -76,35 +89,38 @@ MIT_CONTRACT_PATHS = frozenset(
     }
 )
 
-MIT_BOOTSTRAP_INTERFACE_PATHS = frozenset({"AI_SETUP.md", "runethread-bootstrap.json"})
+MIT_BOOTSTRAP_INTERFACE_SHA256 = {
+    "runethread-bootstrap.json": "23c71ec28f548755cba680a318e1ad344c1f419de403104d1a46a5512625742d",
+}
+MIT_BOOTSTRAP_INTERFACE_PATHS = frozenset(MIT_BOOTSTRAP_INTERFACE_SHA256)
 
-# These are output pathnames only. The Runethread-authored bytes emitted there
-# have the narrow MIT output exception described in LICENSING.md/ADR-026; the
-# Core implementation that generates them remains Perimeter-covered.
-MIT_GENERATED_USER_REPO_OUTPUT_PATHS = frozenset(
-    {
-        ".gitattributes",
-        "README.md",
-        ".github/workflows/validate.yml",
-        ".runethread/config.json",
-        ".runethread/lock.json",
-    }
-)
+MIT_GENERATED_USER_REPO_OUTPUT_SHA256 = {
+    ".gitattributes": "435050e549a9be1ba0793b25299caa35bd8bdda818e222281e297e19e4ced20d",
+    "README.md": "5569022c660cc1f14d8d437fb894dbda18270963d9c11b1041551819f181202a",
+    ".github/workflows/validate.yml": "b9caad673504e7e57acb1910ed2fc882382f13d2af063fe13417fcb76b8d0790",
+    ".runethread/config.json": "f3c02ea03647140205836c3185ee5cd1756e063c5962ef29e816adc3b849d6f9",
+    ".runethread/lock.json": "bca8aeb88a58684f80d6d65880a0aba7c2468b9bf208de283eb76b6ec7e81a52",
+    "index/catalog.json": "42d46a5eda6e577f859b56bc92ed5fb9f1043444231d8d92cd88344307181734",
+    "index/open-loops.md": "3b9f81135065f237e48020999c9f056432a05856341317df007d7b96325156ea",
+    "index/preferences.md": "cd05ac6c1bc3a5df1943d25f9a3ea97d8d56aaf3a30e07f6dd3a6cd7c53d4cb5",
+    "index/projects.md": "ded8999df1c7f664ebb774062c7ae03d14e22c44b204e5c7db1b75ad711bc697",
+}
+MIT_GENERATED_USER_REPO_OUTPUT_PATHS = frozenset(MIT_GENERATED_USER_REPO_OUTPUT_SHA256)
 
-# Current Core has no committed binary/non-text or non-regular exception. A
-# future real binary/symlink/submodule must be admitted by exact reviewed path;
-# it must never become an implicit escape from the licensing text scan.
+GENERATED_EMPTY_PLACEHOLDER_SHA256 = {
+    "memories/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "projects/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+}
+
+EXPECTED_HISTORICAL_BOUNDARIES = {
+    "core_main_pretransition_commit": "22995a7cf7d1c6c0f4ce548fd83667468b356f42",
+    "first_public_branch_perimeter_root_commit": "4bd5279a91ca894f6ccb13db91360f6ba95b6576",
+}
+
 ALLOWED_BINARY_TRACKED_FILES = frozenset()
 ALLOWED_NONREGULAR_TRACKED_FILES = frozenset()
-
-# Faithful historical licensing/source fixtures may preserve wording that would
-# look stale today, but only by exact path + exact bytes. There are no such
-# current exceptions. Future entries must pin SHA-256 rather than skip a folder.
 HISTORICAL_LICENSE_TEXT_SHA256: dict[str, str] = {}
 
-# A readable file that discusses licensing is not allowed to appear silently.
-# Exact membership is deliberately reviewed so future prose, config, scripts, or
-# source strings cannot become a second licensing authority by accident.
 LICENSE_BEARING_TEXT_FILES = frozenset(
     {
         ".github/CODEOWNERS",
@@ -114,6 +130,7 @@ LICENSE_BEARING_TEXT_FILES = frozenset(
         "LICENSE",
         "LICENSE-MIT",
         "LICENSING.md",
+        "LICENSING_BOUNDARY.json",
         "README.md",
         "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md",
         "docs/adr/README.md",
@@ -121,6 +138,7 @@ LICENSE_BEARING_TEXT_FILES = frozenset(
         "docs/runethread/DEVELOPMENT_PIPELINE.md",
         "docs/runethread/ENGINEERING_PROCESS.md",
         "docs/runethread/ROADMAP.md",
+        "internal/starter/output_identity_test.go",
         "scripts/check-pr-impact.py",
         "scripts/check_pr_impact_test.py",
         "scripts/check_development_policy.py",
@@ -140,15 +158,10 @@ LICENSE_VOCAB_RE = re.compile(
     r")"
 )
 
-# These are intentionally narrow present-tense/global contradictions. Historical
-# MIT statements, exact legal text, and explicitly scoped MIT interoperability
-# statements remain valid and are not rejected by a crude keyword ban.
 FORBIDDEN_GLOBAL_LICENSE_PATTERNS = (
     (
         "global MIT-only Runethread claim",
-        re.compile(
-            r"(?i)\brunethread\s+is\s+(?:released|licensed)\s+under[^\n]{0,160}\bMIT(?:\s+License)?\b"
-        ),
+        re.compile(r"(?i)\brunethread\s+is\s+(?:released|licensed)\s+under[^\n]{0,160}\bMIT(?:\s+License)?\b"),
     ),
     (
         "global MIT-only Runethread claim",
@@ -270,6 +283,8 @@ README_NEEDLES = (
     "PolyForm Perimeter License 1.0.1",
     "source-available",
     "[MIT License](LICENSE-MIT)",
+    "exact exception in [`LICENSING_BOUNDARY.json`](LICENSING_BOUNDARY.json)",
+    "Perimeter is the default everywhere else",
     "Historical pre-transition material",
     "User-authored memory/project data is not licensed to Runethread",
     "ADR-026",
@@ -296,6 +311,7 @@ CODEOWNERS_NEEDLES = (
     "/LICENSE @Karageorgiou",
     "/LICENSE-MIT @Karageorgiou",
     "/LICENSING.md @Karageorgiou",
+    "/LICENSING_BOUNDARY.json @Karageorgiou",
     "/README.md @Karageorgiou",
     "/docs/adr/ADR-026-runethread-licensing-and-commercial-model.md @Karageorgiou",
     "/docs/adr/README.md @Karageorgiou",
@@ -304,27 +320,26 @@ CODEOWNERS_NEEDLES = (
     "/docs/runethread/ROADMAP.md @Karageorgiou",
     "/.github/pull_request_template.md @Karageorgiou",
     "/.github/workflows/ @Karageorgiou",
+    "/internal/starter/output_identity_test.go @Karageorgiou",
     "/internal/trust/ @Karageorgiou",
     "/internal/upgrader/ @Karageorgiou",
 )
 
-GITATTRIBUTES_NEEDLES = (
-    "* text=auto eol=lf",
-    "*.exe binary",
-)
+GITATTRIBUTES_NEEDLES = ("* text=auto eol=lf", "*.exe binary")
 
 LICENSING_NEEDLES = (
     "Implementation default — PolyForm Perimeter 1.0.1",
-    "Permissive interoperability boundary — MIT",
-    "closed and enumerated",
-    "ContractPaths()` does not define or enlarge the MIT license boundary",
-    "No Go implementation file",
-    "Narrow generated-output exception",
-    "This is an output exception, not a source-code exception",
-    "Historical MIT material",
-    "implementation repository",
-    "valid UTF-8 text unless its exact path is deliberately classified",
-    "exact path + exact SHA-256",
+    "Permissive interoperability boundary — exact MIT exception",
+    "LICENSING_BOUNDARY.json",
+    "single machine-readable authority",
+    "Perimeter is the default everywhere else",
+    "AI_SETUP.md is not part of the prospective MIT exception",
+    "Exact-byte generated-output exception",
+    "output_identity_test.go",
+    "first public development-branch snapshot whose root license is Perimeter",
+    "4bd5279a91ca894f6ccb13db91360f6ba95b6576",
+    "CI self-protection limitation",
+    "exact-head adversarial review",
     "Core binaries also embed the exact MIT-listed operational-contract files",
     "mixed-license distribution",
     "No post-transition Core release may be requested or published",
@@ -333,18 +348,21 @@ LICENSING_NEEDLES = (
 ADR026_NEEDLES = (
     "Status: **Accepted**",
     "PolyForm Perimeter License 1.0.1",
-    "closed enumerated MIT exception",
-    "ContractPaths()` is **not licensing authority**",
-    "Narrow generated-output exception",
-    "not an implementation repository",
-    "Licensing statements and exceptions are mechanically guarded",
-    "exact path + exact SHA-256",
+    "closed exact MIT exception",
+    "LICENSING_BOUNDARY.json",
+    "Perimeter is the default everywhere else",
+    "AI_SETUP.md",
+    "4bd5279a91ca894f6ccb13db91360f6ba95b6576",
+    "Generated-output byte identity",
+    "CI self-protection",
     "Post-transition release distribution has an explicit mixed-license notice gate",
 )
 
 ADR_CATALOG_NEEDLES = (
     "[ADR-026](ADR-026-runethread-licensing-and-commercial-model.md)",
     "Runethread licensing and commercial model",
+    "exact machine-guarded MIT exception",
+    "Perimeter remains the default outside that exception",
     "Historical MIT grants remain intact",
 )
 
@@ -358,7 +376,7 @@ def read(root: Path, rel: str, errors: list[str]) -> str:
         return ""
 
 
-def check_exact_sha256(root: Path, rel: str, expected: str, errors: list[str]) -> None:
+def check_exact_sha256(root: Path, rel: str, expected: str, label: str, errors: list[str]) -> None:
     path = root / rel
     try:
         actual = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -366,7 +384,7 @@ def check_exact_sha256(root: Path, rel: str, expected: str, errors: list[str]) -
         errors.append(f"{rel}: cannot hash required file: {exc}")
         return
     if actual != expected:
-        errors.append(f"{rel}: exact legal text SHA-256 mismatch: got {actual}, want {expected}")
+        errors.append(f"{rel}: exact {label} SHA-256 mismatch: got {actual}, want {expected}")
 
 
 def check_exact_git_blob_sha1(root: Path, rel: str, expected: str, errors: list[str]) -> None:
@@ -387,7 +405,6 @@ def check_action_pins(rel: str, text: str, errors: list[str]) -> None:
     if not uses:
         errors.append(f"{rel}: no actions are declared")
         return
-
     seen_checkout = False
     seen_setup_go = False
     for target in uses:
@@ -397,13 +414,10 @@ def check_action_pins(rel: str, text: str, errors: list[str]) -> None:
             errors.append(f"{rel}: external action {target!r} must be pinned with @<40-hex-sha>")
             continue
         action, ref = target.rsplit("@", 1)
-        if action == "actions/checkout":
-            seen_checkout = True
-        if action == "actions/setup-go":
-            seen_setup_go = True
+        seen_checkout = seen_checkout or action == "actions/checkout"
+        seen_setup_go = seen_setup_go or action == "actions/setup-go"
         if not SHA40.fullmatch(ref):
             errors.append(f"{rel}: external action {action} must use an immutable 40-hex commit SHA, got {ref!r}")
-
     if not seen_checkout:
         errors.append(f"{rel}: missing actions/checkout usage")
     if not seen_setup_go:
@@ -417,11 +431,7 @@ def require_needles(label: str, text: str, needles: tuple[str, ...], errors: lis
 
 
 def parse_contract_paths(source: str, errors: list[str]) -> frozenset[str]:
-    match = re.search(
-        r"var\s+contractPaths\s*=\s*\[\]string\s*\{(?P<body>.*?)\n\}",
-        source,
-        re.DOTALL,
-    )
+    match = re.search(r"var\s+contractPaths\s*=\s*\[\]string\s*\{(?P<body>.*?)\n\}", source, re.DOTALL)
     if not match:
         errors.append("contract.go: cannot parse contractPaths")
         return frozenset()
@@ -438,7 +448,6 @@ def resolve_contract_embed_paths(root: Path, source: str, errors: list[str]) -> 
     if not patterns:
         errors.append("contract.go: missing //go:embed ContractFS declaration")
         return frozenset()
-
     resolved: set[str] = set()
     for pattern in patterns:
         matches = list(root.glob(pattern))
@@ -458,26 +467,67 @@ def resolve_contract_embed_paths(root: Path, source: str, errors: list[str]) -> 
     return frozenset(resolved)
 
 
+def check_boundary_manifest(root: Path, errors: list[str]) -> None:
+    path = root / "LICENSING_BOUNDARY.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        errors.append(f"LICENSING_BOUNDARY.json: cannot parse exact boundary manifest: {exc}")
+        return
+
+    if data.get("format_version") != 1:
+        errors.append("LICENSING_BOUNDARY.json: format_version must equal 1")
+    if data.get("default_implementation_license") != "PolyForm Perimeter 1.0.1":
+        errors.append("LICENSING_BOUNDARY.json: default implementation license drift")
+
+    contract_paths = data.get("mit_contract_paths")
+    if not isinstance(contract_paths, list) or len(contract_paths) != len(set(contract_paths)):
+        errors.append("LICENSING_BOUNDARY.json: mit_contract_paths must be a duplicate-free list")
+    elif frozenset(contract_paths) != MIT_CONTRACT_PATHS:
+        errors.append("LICENSING_BOUNDARY.json: MIT contract path set does not equal the guarded allowlist")
+
+    if data.get("mit_bootstrap_interface_sha256") != MIT_BOOTSTRAP_INTERFACE_SHA256:
+        errors.append("LICENSING_BOUNDARY.json: bootstrap interface path/digest set drift")
+    if data.get("mit_generated_output_sha256") != MIT_GENERATED_USER_REPO_OUTPUT_SHA256:
+        errors.append("LICENSING_BOUNDARY.json: generated-output path/digest set drift")
+    if data.get("generated_empty_placeholders_sha256") != GENERATED_EMPTY_PLACEHOLDER_SHA256:
+        errors.append("LICENSING_BOUNDARY.json: generated empty-placeholder set drift")
+    if data.get("historical_boundaries") != EXPECTED_HISTORICAL_BOUNDARIES:
+        errors.append("LICENSING_BOUNDARY.json: historical boundary anchors drift")
+
+    for mapping_name in (
+        "mit_bootstrap_interface_sha256",
+        "mit_generated_output_sha256",
+        "generated_empty_placeholders_sha256",
+    ):
+        mapping = data.get(mapping_name)
+        if not isinstance(mapping, dict):
+            continue
+        for rel, digest in mapping.items():
+            if not isinstance(rel, str) or not isinstance(digest, str) or not SHA256.fullmatch(digest):
+                errors.append(f"LICENSING_BOUNDARY.json: invalid path/SHA-256 in {mapping_name}")
+
+
 def check_mit_interoperability_boundary(root: Path, contract_source: str, errors: list[str]) -> None:
     declared = parse_contract_paths(contract_source, errors)
     if declared != MIT_CONTRACT_PATHS:
-        errors.append(
-            "contract.go: ContractPaths() does not equal the independently guarded MIT contract allowlist"
-        )
-
+        errors.append("contract.go: ContractPaths() does not equal the independently guarded MIT contract allowlist")
     embedded = resolve_contract_embed_paths(root, contract_source, errors)
     if embedded != MIT_CONTRACT_PATHS:
-        errors.append(
-            "contract.go: resolved ContractFS embed set does not equal the independently guarded MIT contract allowlist"
-        )
-
-    for rel in sorted(MIT_CONTRACT_PATHS | MIT_BOOTSTRAP_INTERFACE_PATHS):
+        errors.append("contract.go: resolved ContractFS embed set does not equal the independently guarded MIT contract allowlist")
+    for rel in sorted(MIT_CONTRACT_PATHS):
         if not (root / rel).is_file():
-            errors.append(f"{rel}: MIT interoperability allowlist path is missing")
+            errors.append(f"{rel}: MIT contract allowlist path is missing")
+    for rel, expected in MIT_BOOTSTRAP_INTERFACE_SHA256.items():
+        if not (root / rel).is_file():
+            errors.append(f"{rel}: MIT bootstrap-interface file is missing")
+            continue
+        check_exact_sha256(root, rel, expected, "MIT bootstrap-interface bytes", errors)
+    if "AI_SETUP.md" in MIT_BOOTSTRAP_INTERFACE_PATHS:
+        errors.append("AI_SETUP.md: must not be in the prospective MIT bootstrap-interface exception")
 
 
 def regular_repository_files(root: Path, errors: list[str]) -> list[str]:
-    """Return tracked/test-tree regular files and fail on unclassified non-regular entries."""
     if (root / ".git").exists():
         try:
             result = subprocess.run(
@@ -489,7 +539,6 @@ def regular_repository_files(root: Path, errors: list[str]) -> list[str]:
         except (OSError, subprocess.CalledProcessError) as exc:
             errors.append(f"repository manifest: cannot enumerate Git-tracked files: {exc}")
             return []
-
         paths: list[str] = []
         for record in result.stdout.split(b"\0"):
             if not record:
@@ -511,9 +560,7 @@ def regular_repository_files(root: Path, errors: list[str]) -> list[str]:
             rel = Path(rel).as_posix()
             if mode not in {b"100644", b"100755"}:
                 if rel not in ALLOWED_NONREGULAR_TRACKED_FILES:
-                    errors.append(
-                        f"{rel}: tracked non-regular Git object is not explicitly classified"
-                    )
+                    errors.append(f"{rel}: tracked non-regular Git object is not explicitly classified")
                 continue
             path = root / Path(rel)
             try:
@@ -527,7 +574,6 @@ def regular_repository_files(root: Path, errors: list[str]) -> list[str]:
             paths.append(rel)
         return sorted(set(paths))
 
-    # Self-tests copy the guarded surface into a temporary tree without .git.
     paths = []
     for path in root.rglob("*"):
         try:
@@ -554,7 +600,6 @@ def check_readable_licensing_surface(root: Path, errors: list[str]) -> None:
         except OSError as exc:
             errors.append(f"{rel}: cannot read tracked regular file for licensing scan: {exc}")
             continue
-
         if rel in ALLOWED_BINARY_TRACKED_FILES:
             continue
         if b"\0" in data:
@@ -565,24 +610,17 @@ def check_readable_licensing_surface(root: Path, errors: list[str]) -> None:
         except UnicodeDecodeError:
             errors.append(f"{rel}: tracked regular file is not valid UTF-8 and has no binary exception")
             continue
-
         historical_sha = HISTORICAL_LICENSE_TEXT_SHA256.get(rel)
         if historical_sha is not None:
             actual = hashlib.sha256(data).hexdigest()
             if actual != historical_sha:
-                errors.append(
-                    f"{rel}: historical licensing-text SHA-256 mismatch: got {actual}, want {historical_sha}"
-                )
+                errors.append(f"{rel}: historical licensing-text SHA-256 mismatch: got {actual}, want {historical_sha}")
             continue
-
         for label, pattern in FORBIDDEN_GLOBAL_LICENSE_PATTERNS:
             if pattern.search(text):
                 errors.append(f"{rel}: contradictory licensing statement ({label})")
-
         if LICENSE_VOCAB_RE.search(text) and rel not in LICENSE_BEARING_TEXT_FILES:
-            errors.append(
-                f"{rel}: licensing-bearing readable file is not classified in LICENSE_BEARING_TEXT_FILES"
-            )
+            errors.append(f"{rel}: licensing-bearing readable file is not classified in LICENSE_BEARING_TEXT_FILES")
 
 
 def check(root: Path) -> list[str]:
@@ -608,11 +646,14 @@ def check(root: Path) -> list[str]:
     milestone = read(root, "docs/runethread/CURRENT_MILESTONE.md", errors)
     roadmap = read(root, "docs/runethread/ROADMAP.md", errors)
 
-    for rel, expected in EXACT_FILE_SHA256.items():
-        check_exact_sha256(root, rel, expected, errors)
+    for rel, expected in EXACT_LEGAL_SHA256.items():
+        check_exact_sha256(root, rel, expected, "legal text", errors)
+    for rel, expected in EXACT_POLICY_SHA256.items():
+        check_exact_sha256(root, rel, expected, "policy bytes", errors)
     for rel, expected in EXACT_GIT_BLOB_SHA1.items():
         check_exact_git_blob_sha1(root, rel, expected, errors)
 
+    check_boundary_manifest(root, errors)
     check_mit_interoperability_boundary(root, contract_source, errors)
 
     if "pull_request_target:" in validate:
@@ -622,10 +663,8 @@ def check(root: Path) -> list[str]:
     for needle in VALIDATE_NEEDLES:
         if needle not in validate:
             errors.append(f"validate.yml: missing mandatory safety surface {needle!r}")
-
     check_action_pins(".github/workflows/validate.yml", validate, errors)
     check_action_pins(".github/workflows/release.yml", release, errors)
-
     if not re.search(r"(?m)^\s*contents:\s*write\s*$", release):
         errors.append("release.yml: release publication requires explicit contents: write")
 
@@ -644,14 +683,7 @@ def check(root: Path) -> list[str]:
     require_needles("DEVELOPMENT_PIPELINE.md", pipeline, PIPELINE_NEEDLES, errors)
     require_needles("pull_request_template.md", pr_template, PR_NEEDLES, errors)
 
-    for rel in sorted(MIT_GENERATED_USER_REPO_OUTPUT_PATHS):
-        if f"`{rel}`" not in licensing:
-            errors.append(f"LICENSING.md: missing exact generated-output MIT path {rel!r}")
-        if f"`{rel}`" not in adr026:
-            errors.append(f"ADR-026: missing exact generated-output MIT path {rel!r}")
-
     check_readable_licensing_surface(root, errors)
-
     return errors
 
 

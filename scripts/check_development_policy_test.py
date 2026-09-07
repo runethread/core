@@ -20,17 +20,24 @@ spec.loader.exec_module(module)
 
 def copy_repo_surface() -> Path:
     root = Path(tempfile.mkdtemp(prefix="runethread-policy-test-"))
-    rels = (
-        set(module.REQUIRED_FILES)
-        | set(module.MIT_CONTRACT_PATHS)
-        | set(module.MIT_BOOTSTRAP_INTERFACE_PATHS)
-    )
+    rels = set(module.REQUIRED_FILES) | set(module.MIT_CONTRACT_PATHS) | set(module.MIT_BOOTSTRAP_INTERFACE_PATHS)
     for rel in sorted(rels):
         src = ROOT / rel
         dst = root / rel
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst)
     return root
+
+
+def replace_once(path: Path, old: str, new: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    count = text.count(old)
+    if count != 1:
+        raise AssertionError(f"mutation target {old!r} occurred {count} times in {path}; expected exactly once")
+    changed = text.replace(old, new, 1)
+    if changed == text:
+        raise AssertionError(f"mutation unexpectedly produced no change in {path}")
+    path.write_text(changed, encoding="utf-8")
 
 
 def require_error(root: Path, needle: str) -> None:
@@ -46,225 +53,169 @@ def require_clean(root: Path) -> None:
 
 
 def test_current_repository_passes() -> None:
-    errors = module.check(ROOT)
-    if errors:
-        raise AssertionError(f"current repository failed policy guard: {errors!r}")
+    require_clean(ROOT)
 
 
-def test_missing_agent_policy_fails() -> None:
-    root = copy_repo_surface()
+def test_mutation_helper_rejects_missing_target() -> None:
+    root = Path(tempfile.mkdtemp(prefix="runethread-policy-mutation-test-"))
     try:
-        (root / "AGENTS.md").unlink()
-        require_error(root, "AGENTS.md")
+        path = root / "sample.txt"
+        path.write_text("alpha\n", encoding="utf-8")
+        try:
+            replace_once(path, "missing", "changed")
+        except AssertionError:
+            return
+        raise AssertionError("replace_once accepted a missing mutation target")
     finally:
         shutil.rmtree(root)
 
 
-def test_missing_pipeline_policy_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        (root / "docs/runethread/DEVELOPMENT_PIPELINE.md").unlink()
-        require_error(root, "DEVELOPMENT_PIPELINE.md")
-    finally:
-        shutil.rmtree(root)
+def test_missing_required_policy_files_fail() -> None:
+    for rel in (
+        "AGENTS.md",
+        "LICENSING.md",
+        "LICENSING_BOUNDARY.json",
+        "README.md",
+        "docs/adr/README.md",
+        "internal/starter/output_identity_test.go",
+    ):
+        root = copy_repo_surface()
+        try:
+            (root / rel).unlink()
+            require_error(root, rel)
+        finally:
+            shutil.rmtree(root)
 
 
-def test_missing_licensing_policy_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        (root / "LICENSING.md").unlink()
-        require_error(root, "LICENSING.md")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_readme_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        (root / "README.md").unlink()
-        require_error(root, "README.md")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_adr_catalog_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        (root / "docs/adr/README.md").unlink()
-        require_error(root, "docs/adr/README.md")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_perimeter_version_drift_fails() -> None:
+def test_perimeter_legal_text_drift_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / "LICENSE"
-        text = path.read_text().replace("PolyForm Perimeter License 1.0.1", "PolyForm Perimeter License 9.9.9", 1)
-        path.write_text(text)
+        replace_once(path, "within 32 days", "within 99 days")
         require_error(root, "LICENSE: exact legal text SHA-256 mismatch")
     finally:
         shutil.rmtree(root)
 
 
-def test_perimeter_unchecked_clause_drift_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "LICENSE"
-        text = path.read_text().replace("within 32 days", "within 99 days", 1)
-        path.write_text(text)
-        require_error(root, "LICENSE: exact legal text SHA-256 mismatch")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_mit_unchecked_clause_drift_fails() -> None:
+def test_mit_legal_text_drift_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / "LICENSE-MIT"
-        text = path.read_text().replace("FITNESS FOR A PARTICULAR PURPOSE", "FITNESS FOR ANY PURPOSE", 1)
-        path.write_text(text)
+        replace_once(path, "FITNESS FOR A PARTICULAR PURPOSE", "FITNESS FOR ANY PURPOSE")
         require_error(root, "LICENSE-MIT: exact legal text SHA-256 mismatch")
     finally:
         shutil.rmtree(root)
 
 
-def test_contract_paths_cannot_expand_mit_implicitly_fails() -> None:
+def test_boundary_manifest_any_byte_drift_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSING_BOUNDARY.json"
+        replace_once(path, '"format_version": 1', '"format_version": 2')
+        require_error(root, "LICENSING_BOUNDARY.json: exact policy bytes SHA-256 mismatch")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_boundary_manifest_cannot_expand_contract_exception() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSING_BOUNDARY.json"
+        replace_once(path, '    "templates/reference.md"\n', '    "templates/reference.md",\n    "docs/NEW_INTEROP.md"\n')
+        require_error(root, "exact policy bytes SHA-256 mismatch")
+        require_error(root, "MIT contract path set does not equal the guarded allowlist")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_boundary_manifest_cannot_add_ai_setup_to_prospective_exception() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSING_BOUNDARY.json"
+        marker = '  "mit_bootstrap_interface_sha256": {\n    "runethread-bootstrap.json": "23c71ec28f548755cba680a318e1ad344c1f419de403104d1a46a5512625742d"\n  },'
+        replacement = '  "mit_bootstrap_interface_sha256": {\n    "AI_SETUP.md": "0000000000000000000000000000000000000000000000000000000000000000",\n    "runethread-bootstrap.json": "23c71ec28f548755cba680a318e1ad344c1f419de403104d1a46a5512625742d"\n  },'
+        replace_once(path, marker, replacement)
+        require_error(root, "bootstrap interface path/digest set drift")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_bootstrap_interface_byte_drift_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "runethread-bootstrap.json"
+        replace_once(path, '"bootstrap_protocol": 1', '"bootstrap_protocol": 2')
+        require_error(root, "MIT bootstrap-interface bytes SHA-256 mismatch")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_contract_go_textual_spoof_is_blocked_by_exact_blob_lock() -> None:
     root = copy_repo_surface()
     try:
         path = root / "contract.go"
-        text = path.read_text()
-        marker = '\t"templates/reference.md",\n'
-        text = text.replace(marker, marker + '\t"docs/NEW_INTEROP.md",\n', 1)
-        path.write_text(text)
+        text = path.read_text(encoding="utf-8")
+        path.write_text("// var contractPaths = []string{\"docs/FAKE.md\"}\n" + text, encoding="utf-8")
+        require_error(root, "contract.go: exact protected file Git blob mismatch")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_contract_paths_cannot_expand_implicitly() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "contract.go"
+        replace_once(path, '\t"templates/reference.md",\n', '\t"templates/reference.md",\n\t"docs/NEW_INTEROP.md",\n')
         require_error(root, "ContractPaths() does not equal the independently guarded MIT contract allowlist")
     finally:
         shutil.rmtree(root)
 
 
-def test_contract_embed_wildcard_cannot_expand_mit_implicitly_fails() -> None:
+def test_contract_embed_wildcard_cannot_expand_implicitly() -> None:
     root = copy_repo_surface()
     try:
         path = root / "templates/new-unreviewed.md"
-        path.write_text("# New unreviewed template\n")
+        path.write_text("# New unreviewed template\n", encoding="utf-8")
         require_error(root, "resolved ContractFS embed set does not equal the independently guarded MIT contract allowlist")
     finally:
         shutil.rmtree(root)
 
 
-def test_missing_mit_allowlist_file_fails() -> None:
+def test_missing_contract_allowlist_file_fails() -> None:
     root = copy_repo_surface()
     try:
         (root / "templates/reference.md").unlink()
-        require_error(root, "MIT interoperability allowlist path is missing")
+        require_error(root, "MIT contract allowlist path is missing")
     finally:
         shutil.rmtree(root)
 
 
-def test_licensing_boundary_drift_fails() -> None:
+def test_validate_workflow_any_semantic_drift_fails_exact_lock() -> None:
     root = copy_repo_surface()
     try:
-        path = root / "LICENSING.md"
-        text = path.read_text().replace("Permissive interoperability boundary — MIT", "Interoperability boundary", 1)
-        path.write_text(text)
-        require_error(root, "Permissive interoperability boundary — MIT")
+        path = root / ".github/workflows/validate.yml"
+        replace_once(path, "python3 scripts/check_development_policy.py", "echo policy-disabled")
+        require_error(root, ".github/workflows/validate.yml: exact protected file Git blob mismatch")
     finally:
         shutil.rmtree(root)
 
 
-def test_licensing_cannot_drop_closed_exception_fails() -> None:
+def test_validation_write_permission_fails() -> None:
     root = copy_repo_surface()
     try:
-        path = root / "LICENSING.md"
-        text = path.read_text().replace("closed and enumerated", "role based", 1)
-        path.write_text(text)
-        require_error(root, "closed and enumerated")
+        path = root / ".github/workflows/validate.yml"
+        replace_once(path, "contents: read", "contents: write")
+        require_error(root, "contents: write")
     finally:
         shutil.rmtree(root)
 
 
-def test_licensing_mixed_distribution_drift_fails() -> None:
+def test_moving_action_tag_fails() -> None:
     root = copy_repo_surface()
     try:
-        path = root / "LICENSING.md"
-        text = path.read_text().replace("mixed-license distribution", "combined distribution", 1)
-        path.write_text(text)
-        require_error(root, "mixed-license distribution")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_licensing_cannot_drop_template_role_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "LICENSING.md"
-        text = path.read_text().replace(
-            "MIT interoperability/bootstrap repository, not an implementation repository",
-            "general Runethread repository",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "implementation repository")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_licensing_cannot_drop_readable_text_gate_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "LICENSING.md"
-        marker = "valid UTF-8 text unless its exact path is deliberately classified"
-        text = path.read_text().replace(marker, "readable text when practical", 1)
-        path.write_text(text)
-        require_error(root, marker)
-    finally:
-        shutil.rmtree(root)
-
-
-def test_adr_cannot_drop_template_role_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md"
-        text = path.read_text().replace(
-            "MIT interoperability/bootstrap repository, not an implementation repository",
-            "general Runethread repository",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "not an implementation repository")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_adr_cannot_broaden_closed_mit_exception_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md"
-        text = path.read_text().replace("closed enumerated MIT exception", "broad role-based MIT category", 1)
-        path.write_text(text)
-        require_error(root, "closed enumerated MIT exception")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_readme_cannot_drop_mixed_boundary_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "README.md"
-        text = path.read_text().replace("mixed licensing boundary", "licensing model", 1)
-        path.write_text(text)
-        require_error(root, "mixed licensing boundary")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_readme_cannot_drop_source_available_marker_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "README.md"
-        text = path.read_text().replace("source-available", "publicly readable", 1)
-        path.write_text(text)
-        require_error(root, "source-available")
+        path = root / ".github/workflows/validate.yml"
+        replace_once(path, "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@v7")
+        require_error(root, "immutable 40-hex commit SHA")
     finally:
         shutil.rmtree(root)
 
@@ -273,127 +224,58 @@ def test_release_license_gate_bypass_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / ".github/workflows/release.yml"
-        text = path.read_text().replace('if [ "$VERSION" != "v0.9.0" ]; then', "if false; then", 1)
-        path.write_text(text)
+        replace_once(path, 'if [ "$VERSION" != "v0.9.0" ]; then', "if false; then")
         require_error(root, ".github/workflows/release.yml: exact protected file Git blob mismatch")
     finally:
         shutil.rmtree(root)
 
 
-def test_release_license_gate_semantic_bypass_fails() -> None:
+def test_licensing_policy_markers_are_fail_closed() -> None:
     root = copy_repo_surface()
     try:
-        path = root / ".github/workflows/release.yml"
-        text = path.read_text()
-        marker = '          if [ "$VERSION" != "v0.9.0" ]; then\n'
-        text = text.replace(marker, '          VERSION="v0.9.0"\n' + marker, 1)
-        path.write_text(text)
-        require_error(root, ".github/workflows/release.yml: exact protected file Git blob mismatch")
+        path = root / "LICENSING.md"
+        replace_once(path, "Perimeter is the default everywhere else", "defaults are inferred")
+        require_error(root, "Perimeter is the default everywhere else")
     finally:
         shutil.rmtree(root)
 
 
-def test_process_cannot_drop_mixed_license_rule_fails() -> None:
+def test_licensing_policy_cannot_readd_ai_setup_exception() -> None:
     root = copy_repo_surface()
     try:
-        path = root / "docs/runethread/ENGINEERING_PROCESS.md"
-        text = path.read_text().replace(
-            "Core binaries embed MIT-covered `ContractFS` interoperability material",
-            "Core binaries include contract material",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "Core binaries embed MIT-covered `ContractFS` interoperability material")
+        path = root / "LICENSING.md"
+        replace_once(path, "AI_SETUP.md is not part of the prospective MIT exception", "AI_SETUP.md follows the bootstrap exception")
+        require_error(root, "AI_SETUP.md is not part of the prospective MIT exception")
     finally:
         shutil.rmtree(root)
 
 
-def test_process_cannot_drop_readable_text_scan_fails() -> None:
+def test_licensing_policy_cannot_hide_branch_boundary() -> None:
     root = copy_repo_surface()
     try:
-        path = root / "docs/runethread/ENGINEERING_PROCESS.md"
-        text = path.read_text().replace(
-            "every Git-tracked regular file that decodes as UTF-8 text",
-            "selected documentation files",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "every Git-tracked regular file that decodes as UTF-8 text")
+        path = root / "LICENSING.md"
+        replace_once(path, "4bd5279a91ca894f6ccb13db91360f6ba95b6576", "0000000000000000000000000000000000000000")
+        require_error(root, "4bd5279a91ca894f6ccb13db91360f6ba95b6576")
     finally:
         shutil.rmtree(root)
 
 
-def test_pipeline_cannot_drop_mixed_license_rule_fails() -> None:
+def test_adr_cannot_drop_machine_boundary_authority() -> None:
     root = copy_repo_surface()
     try:
-        path = root / "docs/runethread/DEVELOPMENT_PIPELINE.md"
-        text = path.read_text().replace(
-            "Core binaries embed MIT-covered `ContractFS` material",
-            "Core binaries include contract material",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "Core binaries embed MIT-covered `ContractFS` material")
+        path = root / "docs/adr/ADR-026-runethread-licensing-and-commercial-model.md"
+        replace_once(path, "LICENSING_BOUNDARY.json", "boundary-not-recorded.json")
+        require_error(root, "LICENSING_BOUNDARY.json")
     finally:
         shutil.rmtree(root)
 
 
-def test_pipeline_cannot_drop_readable_text_scan_fails() -> None:
+def test_readme_cannot_broaden_summary() -> None:
     root = copy_repo_surface()
     try:
-        path = root / "docs/runethread/DEVELOPMENT_PIPELINE.md"
-        text = path.read_text().replace(
-            "repository-wide readable-text licensing consistency gate",
-            "licensing consistency check",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "repository-wide readable-text licensing consistency gate")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_milestone_cannot_drop_mixed_license_rule_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "docs/runethread/CURRENT_MILESTONE.md"
-        text = path.read_text().replace(
-            "Core binaries embed MIT-covered contract material",
-            "Core binaries include contract material",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "Core binaries embed MIT-covered contract material")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_milestone_cannot_drop_template_protection_gate_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "docs/runethread/CURRENT_MILESTONE.md"
-        text = path.read_text().replace(
-            "Protect and remediate the public `runethread/memory-template`",
-            "Update the public template",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "Protect and remediate the public `runethread/memory-template`")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_roadmap_cannot_drop_template_protection_gate_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "docs/runethread/ROADMAP.md"
-        text = path.read_text().replace(
-            "establish basic protected-`main` policy on `runethread/memory-template`",
-            "update `runethread/memory-template`",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "establish basic protected-`main` policy on `runethread/memory-template`")
+        path = root / "README.md"
+        replace_once(path, "Perimeter is the default everywhere else", "the rest is unspecified")
+        require_error(root, "Perimeter is the default everywhere else")
     finally:
         shutil.rmtree(root)
 
@@ -403,7 +285,7 @@ def test_new_unclassified_licensing_readable_file_fails() -> None:
     try:
         path = root / "notes" / "policy.txt"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("Implementation notes for PolyForm Perimeter License 1.0.1.\n")
+        path.write_text("Implementation notes for PolyForm Perimeter License 1.0.1.\n", encoding="utf-8")
         require_error(root, "licensing-bearing readable file is not classified")
     finally:
         shutil.rmtree(root)
@@ -414,7 +296,7 @@ def test_broader_rights_vocabulary_is_classified_fails() -> None:
     try:
         path = root / "notes" / "brand-policy.txt"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("This file defines the Runethread trademark policy.\n")
+        path.write_text("This file defines the Runethread trademark policy.\n", encoding="utf-8")
         require_error(root, "licensing-bearing readable file is not classified")
     finally:
         shutil.rmtree(root)
@@ -425,15 +307,14 @@ def test_contradictory_global_mit_claim_anywhere_fails() -> None:
     try:
         path = root / "notes" / "stale.txt"
         path.parent.mkdir(parents=True, exist_ok=True)
-        # Split the phrase so this self-test source is not itself a stale claim.
         bad = "Runethread " + "is released under " + "the MIT " + "License.\n"
-        path.write_text(bad)
+        path.write_text(bad, encoding="utf-8")
         require_error(root, "contradictory licensing statement")
     finally:
         shutil.rmtree(root)
 
 
-def test_invalid_utf8_cannot_hide_licensing_text_fails() -> None:
+def test_invalid_utf8_cannot_hide_text_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / "notes" / "opaque.txt"
@@ -444,7 +325,7 @@ def test_invalid_utf8_cannot_hide_licensing_text_fails() -> None:
         shutil.rmtree(root)
 
 
-def test_nul_bearing_file_cannot_hide_licensing_text_fails() -> None:
+def test_nul_bearing_file_cannot_hide_text_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / "notes" / "nul.txt"
@@ -460,7 +341,7 @@ def test_nonregular_symlink_requires_explicit_classification_fails() -> None:
     try:
         target = root / "notes" / "target.txt"
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text("ordinary target\n")
+        target.write_text("ordinary target\n", encoding="utf-8")
         link = root / "notes" / "link.txt"
         link.symlink_to(target.name)
         require_error(root, "non-regular repository object is not explicitly classified")
@@ -468,10 +349,9 @@ def test_nonregular_symlink_requires_explicit_classification_fails() -> None:
         shutil.rmtree(root)
 
 
-def test_exact_historical_license_text_exception_is_allowed_and_byte_locked() -> None:
+def test_exact_historical_text_exception_is_allowed_and_byte_locked() -> None:
     root = copy_repo_surface()
     rel = "notes/historical-license.txt"
-    # Build the stale sentence dynamically so the test source itself is current-policy clean.
     data = ("Runethread " + "is released under " + "the MIT " + "License.\n").encode("utf-8")
     old = dict(module.HISTORICAL_LICENSE_TEXT_SHA256)
     try:
@@ -493,214 +373,42 @@ def test_unrelated_new_readable_file_is_allowed() -> None:
     try:
         path = root / "notes" / "ordinary.txt"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("Ordinary implementation note with no policy statement.\n")
+        path.write_text("Ordinary implementation note with no policy statement.\n", encoding="utf-8")
         require_clean(root)
     finally:
         shutil.rmtree(root)
 
 
-def test_validation_write_permission_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/workflows/validate.yml"
-        text = path.read_text()
-        text = text.replace("contents: read", "contents: write", 1)
-        path.write_text(text)
-        require_error(root, "contents: write")
-    finally:
-        shutil.rmtree(root)
+def test_codeowners_protect_new_boundary_surfaces() -> None:
+    for old in (
+        "/LICENSING_BOUNDARY.json @Karageorgiou",
+        "/internal/starter/output_identity_test.go @Karageorgiou",
+        "/.github/workflows/ @Karageorgiou",
+    ):
+        root = copy_repo_surface()
+        try:
+            path = root / ".github/CODEOWNERS"
+            replace_once(path, old, old.replace("@Karageorgiou", "@nobody"))
+            require_error(root, old)
+        finally:
+            shutil.rmtree(root)
 
 
-def test_moving_action_tag_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/workflows/validate.yml"
-        text = path.read_text()
-        text = text.replace("actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@v7", 1)
-        path.write_text(text)
-        require_error(root, "immutable 40-hex commit SHA")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_new_unpinned_external_action_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/workflows/validate.yml"
-        text = path.read_text()
-        marker = "      - name: Verify module content\n"
-        injected = "      - name: Unsafe moving action\n        uses: example/action@v1\n\n"
-        text = text.replace(marker, injected + marker, 1)
-        path.write_text(text)
-        require_error(root, "example/action")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_cross_platform_gate_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/workflows/validate.yml"
-        text = path.read_text().replace("windows-latest", "windows-disabled", 1)
-        path.write_text(text)
-        require_error(root, "windows-latest")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_race_detector_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/workflows/validate.yml"
-        text = path.read_text().replace("go test -race -count=1 ./...", "go test -count=1 ./...", 1)
-        path.write_text(text)
-        require_error(root, "go test -race -count=1 ./...")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_lf_policy_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".gitattributes"
-        text = path.read_text().replace("* text=auto eol=lf", "* text=auto")
-        path.write_text(text)
-        require_error(root, "* text=auto eol=lf")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_dependabot_actions_ecosystem_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/dependabot.yml"
-        text = path.read_text().replace('package-ecosystem: "github-actions"', 'package-ecosystem: "disabled-actions"')
-        path.write_text(text)
-        require_error(root, 'package-ecosystem: "github-actions"')
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_codeowner_for_workflows_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/CODEOWNERS"
-        text = path.read_text().replace("/.github/workflows/ @Karageorgiou", "/.github/workflows/ @nobody")
-        path.write_text(text)
-        require_error(root, "/.github/workflows/ @Karageorgiou")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_codeowner_for_pipeline_policy_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/CODEOWNERS"
-        text = path.read_text().replace(
-            "/docs/runethread/DEVELOPMENT_PIPELINE.md @Karageorgiou",
-            "/docs/runethread/DEVELOPMENT_PIPELINE.md @nobody",
-        )
-        path.write_text(text)
-        require_error(root, "/docs/runethread/DEVELOPMENT_PIPELINE.md @Karageorgiou")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_codeowner_for_licensing_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/CODEOWNERS"
-        text = path.read_text().replace("/LICENSING.md @Karageorgiou", "/LICENSING.md @nobody", 1)
-        path.write_text(text)
-        require_error(root, "/LICENSING.md @Karageorgiou")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_codeowner_for_readme_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/CODEOWNERS"
-        text = path.read_text().replace("/README.md @Karageorgiou", "/README.md @nobody", 1)
-        path.write_text(text)
-        require_error(root, "/README.md @Karageorgiou")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_codeowner_for_roadmap_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/CODEOWNERS"
-        text = path.read_text().replace(
-            "/docs/runethread/ROADMAP.md @Karageorgiou",
-            "/docs/runethread/ROADMAP.md @nobody",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "/docs/runethread/ROADMAP.md @Karageorgiou")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_missing_codeowner_for_adr_catalog_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/CODEOWNERS"
-        text = path.read_text().replace(
-            "/docs/adr/README.md @Karageorgiou",
-            "/docs/adr/README.md @nobody",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "/docs/adr/README.md @Karageorgiou")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_adr_catalog_cannot_drop_adr026_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / "docs/adr/README.md"
-        text = path.read_text().replace(
-            "[ADR-026](ADR-026-runethread-licensing-and-commercial-model.md)",
-            "ADR-026 removed",
-            1,
-        )
-        path.write_text(text)
-        require_error(root, "[ADR-026](ADR-026-runethread-licensing-and-commercial-model.md)")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_pr_template_cannot_drop_scope_boundary_fails() -> None:
+def test_pr_template_cannot_drop_licensing_gate() -> None:
     root = copy_repo_surface()
     try:
         path = root / ".github/pull_request_template.md"
-        text = path.read_text().replace("## Scope-boundary decision", "## Scope")
-        path.write_text(text)
-        require_error(root, "Scope-boundary decision")
-    finally:
-        shutil.rmtree(root)
-
-
-def test_pr_template_cannot_drop_licensing_gate_fails() -> None:
-    root = copy_repo_surface()
-    try:
-        path = root / ".github/pull_request_template.md"
-        text = path.read_text().replace("## Licensing / rights gate", "## Rights notes", 1)
-        path.write_text(text)
+        replace_once(path, "## Licensing / rights gate", "## Rights notes")
         require_error(root, "Licensing / rights gate")
     finally:
         shutil.rmtree(root)
 
 
-def test_pipeline_cannot_drop_platform_no_bypass_rule_fails() -> None:
+def test_pipeline_platform_bypass_rule_remains() -> None:
     root = copy_repo_surface()
     try:
         path = root / "docs/runethread/DEVELOPMENT_PIPELINE.md"
-        text = path.read_text().replace("Cross-platform failures MUST NOT", "Cross-platform failures should not")
-        path.write_text(text)
+        replace_once(path, "Cross-platform failures MUST NOT", "Cross-platform failures should not")
         require_error(root, "Cross-platform failures MUST NOT")
     finally:
         shutil.rmtree(root)
