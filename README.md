@@ -260,4 +260,4 @@ Runethread is not a secrets vault. Never store passwords, tokens, API secrets, p
 
 ## License
 
-Current source in this repository is **source-available** under the [PolyForm Perimeter License 1.0.1](LICENSE). Historical Core versions released before the ADR-026 transition retain their existing MIT grants. The transition does not silently relicense `runethread/memory-template`, user-owned memory repositories, or user-authored data; see [`LICENSING.md`](LICENSING.md) and [`LICENSE-MIT`](LICENSE-MIT).
+Runethread uses a **mixed licensing boundary**. Core implementation material defaults to the [PolyForm Perimeter License 1.0.1](LICENSE) and is source-available, while the portable Memory Contract/bootstrap/generated user-repository interoperability layer remains available under the [MIT License](LICENSE-MIT). Historical pre-transition material also retains the MIT rights already granted. User-authored memory/project data is not licensed to Runethread by this policy. See [`LICENSING.md`](LICENSING.md) and [ADR-026](docs/adr/ADR-026-runethread-licensing-and-commercial-model.md) for the exact scope and transition rules.
