@@ -52,17 +52,17 @@ Those prior grants continue to cover the pre-transition material a recipient obt
 
 Post-transition Runethread-authored changes to implementation-default files are not automatically licensed under the historical MIT grant. A recipient may continue using the older MIT-covered material under MIT, but does not obtain MIT rights to later Perimeter-only changes merely because those changes share Git history with the older material.
 
-`LICENSE-MIT` is therefore both the preserved historical Core license text and the current license for the explicit permissive interoperability boundary in Decision 2.
+`LICENSE-MIT` is therefore both the preserved historical Core MIT text and the current license for the explicit permissive interoperability boundary in Decision 2.
 
-### 4. User repositories and user data are separate rights boundaries
+### 4. User repositories, the public template, and user data are separate rights boundaries
 
 ADR-026 does not license `runethread/memory-template` or a user-owned memory repository as a whole under Perimeter.
 
-The current public memory template and known contract-v9 memory repositories remain pinned to v0.9.0 / MIT-era managed material. Future template/repository packaging must preserve the explicit interoperability/user-data split rather than relying on a repository-root implementation license.
+The current public memory template and known contract-v9 memory repositories remain pinned to v0.9.0 / MIT-era managed material. No right in user-authored memories, project content, imports, attachments, or other user-owned data is granted to Runethread merely because Runethread tooling stores, indexes, validates, transports, or processes that data.
 
-No right in user-authored memories, project content, imports, attachments, or other user-owned data is granted to Runethread merely because Runethread tooling stores, indexes, validates, transports, or processes that data.
+The public `runethread/memory-template` is already an active distribution of Runethread-authored MIT interoperability material. After the protected Core ADR-026 transition, the template must receive a scoped copy of the MIT license/copyright notice through its own protected and reviewed change. That remediation applies only to the Runethread-authored MIT interoperability material distributed by the template; it must not imply that user-authored memory/project content is MIT-licensed, and it must not change the contract-v9 managed contract bytes or lock identity merely to add the notice.
 
-When future releases generate, upgrade, template, or otherwise distribute Runethread-managed MIT interoperability files in user repositories, the distribution must make the MIT license and copyright notice available for those managed files without implying that the same license covers user-authored data. The current contract-v9/template bytes are not changed by this ADR; any future notice-propagation change must pass the normal contract/bootstrap/release/downstream gates.
+Existing user-owned/private memory repositories are not modified merely to add a notice file. The immutable v0.9.0 starter/upgrader behavior remains historical evidence. Before any later Core release is unblocked, the versioned starter/upgrader/release path must make the MIT license/copyright notice available with Runethread-managed MIT interoperability material it generates or upgrades, using the normal bootstrap/version/release/downstream gates.
 
 ### 5. Core and Hosted implementation policy must align prospectively
 
@@ -133,8 +133,9 @@ This ADR is a licensing/governance change. It introduces no Cloudflare runtime, 
 - Runethread can monetize material for which it controls the required rights and may offer separate commercial terms.
 - Perimeter-covered implementation must be described as source-available rather than OSI open source; MIT-covered interoperability material remains open source.
 - `runethread/memory-template`, existing user memory repositories, and user-authored data are not silently relicensed by this ADR.
+- The public template receives a **scoped MIT notice remediation** after Core's protected transition because it already distributes Runethread-authored MIT interoperability material; that remediation does not change contract-v9 managed bytes or license user data.
+- Existing private/user repositories are not mutated merely to add license notices; notice propagation in later generated/upgraded repositories belongs to the next versioned starter/upgrader/release path.
 - A future post-transition Core binary/release has a mandatory **mixed-license** packaging gate: Perimeter terms/URL + Required Notice for implementation and MIT license/copyright notice for embedded/distributed interoperability material.
-- Future template/generated-user-repository distributions of MIT interoperability material must propagate the MIT notice through the normal contract/bootstrap/downstream release process rather than modifying current v0.9 repositories opportunistically.
 - A competitor can still use historical MIT material and can independently implement ideas/interfaces to the extent copyright law permits; Perimeter is not a patent or a general noncompetition right over abstract functionality.
 - Contributor governance becomes a prerequisite before material outside source is merged.
 - License enforceability and ownership questions can depend on jurisdiction and facts; material commercial contracts, rights transfers, or enforcement should receive qualified legal review.
@@ -181,8 +182,8 @@ The Core side of the licensing transition is complete only when:
 6. project engineering policy, PR review surface, CODEOWNERS, and development-policy guard protect licensing/rightsholder/contribution/notice changes as deliberate governance work, with the standardized `LICENSE` and `LICENSE-MIT` bytes locked exactly;
 7. the current release request remains v0.9.0 and this transition does not publish a new release;
 8. the release workflow mechanically refuses every requested version other than the already-published v0.9.0 baseline until a separately reviewed packaging change proves both Perimeter and MIT notice delivery for the mixed Core artifacts and updates the policy guard/self-tests;
-9. any future template/generated-user-repository distribution of MIT interoperability material propagates the applicable MIT license/copyright notice through the normal contract/bootstrap/release/downstream gates without licensing user-authored data;
-10. `runethread/memory-template`, existing user repositories, and user-authored data are not silently relicensed;
+9. after Core merges, `runethread/memory-template` receives a scoped MIT license/copyright notice through its own protected reviewed change because it already distributes Runethread-authored MIT interoperability material, without changing contract-v9 managed bytes or licensing user-authored data;
+10. existing private/user repositories are not modified solely for notice remediation, while the next versioned Core starter/upgrader/release path is required to propagate the applicable MIT notice with generated/upgraded Runethread-managed interoperability material before a later release is unblocked;
 11. Hosted adopts the Perimeter implementation default, explicit current licensor/rightsholder scope, and its own historical MIT boundary through a separate protected PR before any runtime/Worker source is merged;
 12. Hosted documentation records ADR-026 as the controlling licensing decision rather than leaving the long-term model unresolved;
 13. no documentation describes Perimeter-covered implementation as OSI open source;
