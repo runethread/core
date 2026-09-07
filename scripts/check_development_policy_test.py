@@ -72,7 +72,29 @@ def test_perimeter_version_drift_fails() -> None:
         path = root / "LICENSE"
         text = path.read_text().replace("PolyForm Perimeter License 1.0.1", "PolyForm Perimeter License 9.9.9", 1)
         path.write_text(text)
-        require_error(root, "PolyForm Perimeter License 1.0.1")
+        require_error(root, "LICENSE: exact legal text SHA-256 mismatch")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_perimeter_unchecked_clause_drift_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSE"
+        text = path.read_text().replace("within 32 days", "within 99 days", 1)
+        path.write_text(text)
+        require_error(root, "LICENSE: exact legal text SHA-256 mismatch")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_mit_unchecked_clause_drift_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / "LICENSE-MIT"
+        text = path.read_text().replace("FITNESS FOR A PARTICULAR PURPOSE", "FITNESS FOR ANY PURPOSE", 1)
+        path.write_text(text)
+        require_error(root, "LICENSE-MIT: exact legal text SHA-256 mismatch")
     finally:
         shutil.rmtree(root)
 
@@ -84,6 +106,17 @@ def test_licensing_boundary_drift_fails() -> None:
         text = path.read_text().replace("Permissive interoperability boundary — MIT", "Interoperability boundary", 1)
         path.write_text(text)
         require_error(root, "Permissive interoperability boundary — MIT")
+    finally:
+        shutil.rmtree(root)
+
+
+def test_release_license_gate_bypass_fails() -> None:
+    root = copy_repo_surface()
+    try:
+        path = root / ".github/workflows/release.yml"
+        text = path.read_text().replace('if [ "$VERSION" != "v0.9.0" ]; then', "if false; then", 1)
+        path.write_text(text)
+        require_error(root, 'if [ "$VERSION" != "v0.9.0" ]; then')
     finally:
         shutil.rmtree(root)
 
