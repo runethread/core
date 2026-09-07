@@ -287,8 +287,13 @@ def test_category_wide_mit_exception_claim_fails() -> None:
     root = copy_repo_surface()
     try:
         path = root / "docs/runethread/ROADMAP.md"
+        bad = (
+            "The Memory Contract/bootstrap/"
+            + "generated-support interoperability layer "
+            + "remains MIT.\n"
+        )
         with path.open("a", encoding="utf-8") as handle:
-            handle.write("\nThe Memory Contract/bootstrap/generated-support interoperability layer remains MIT.\n")
+            handle.write("\n" + bad)
         require_error(root, "category-wide MIT exception claim")
     finally:
         shutil.rmtree(root)
