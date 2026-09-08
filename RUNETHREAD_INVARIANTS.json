@@ -1,0 +1,88 @@
+{
+  "format_version": 1,
+  "authority": {
+    "repository": "runethread/core",
+    "path": "RUNETHREAD_INVARIANTS.json"
+  },
+  "classifications": {
+    "ARCH": "component and boundary architecture",
+    "DATA": "canonical data and ownership",
+    "GOV": "engineering governance",
+    "REL": "release and compatibility identity",
+    "SEM": "semantic ownership"
+  },
+  "invariants": [
+    {
+      "id": "RT-ARCH-001",
+      "status": "active",
+      "classification": "ARCH",
+      "statement": "Core remains provider-neutral; provider-specific hosted and integration dependencies, credentials, and execution authority live outside Core.",
+      "scope": ["project", "core", "hosted", "integrations"],
+      "enforcement": {
+        "mode": "review",
+        "mechanisms": ["dependency-boundary review", "exact-head architecture review"]
+      },
+      "evidence": ["ADR-005", "ADR-014", "ROADMAP"]
+    },
+    {
+      "id": "RT-ARCH-002",
+      "status": "active",
+      "classification": "ARCH",
+      "statement": "Correctness-relevant behavior crosses component boundaries through explicit versioned contracts or immutable identities, not through unversioned internal implementation coupling.",
+      "scope": ["project", "core", "hosted", "integrations"],
+      "enforcement": {
+        "mode": "mixed",
+        "mechanisms": ["runtime/contract identity tests", "release compatibility review", "exact-head architecture review"]
+      },
+      "evidence": ["ADR-005", "ADR-011", "ROADMAP"]
+    },
+    {
+      "id": "RT-DATA-001",
+      "status": "active",
+      "classification": "DATA",
+      "statement": "The user-owned Git repository is canonical durable semantic memory state; derived indexes, caches, and project-orientation views are not sole semantic authority.",
+      "scope": ["project", "core", "hosted", "memory-template"],
+      "enforcement": {
+        "mode": "mixed",
+        "mechanisms": ["repository validation tests", "migration preservation tests", "architecture review"]
+      },
+      "evidence": ["ADR-001", "ADR-015", "memory-template README"]
+    },
+    {
+      "id": "RT-GOV-001",
+      "status": "active",
+      "classification": "GOV",
+      "statement": "Material recommendations and changes are evaluated against the actual project objective, evidence, costs, simpler alternatives, and accepted constraints; unresolved material ambiguity is surfaced rather than silently assumed.",
+      "scope": ["project", "contributors", "agents"],
+      "enforcement": {
+        "mode": "mixed",
+        "mechanisms": ["AGENTS decision discipline", "pull-request invariant impact", "exact-head review"]
+      },
+      "evidence": ["ADR-027", "AGENTS.md", "pull request template"]
+    },
+    {
+      "id": "RT-REL-001",
+      "status": "active",
+      "classification": "REL",
+      "statement": "Released or hosted execution is bound to explicit immutable verified component, contract, and protocol identities and does not execute floating development branches as production authority.",
+      "scope": ["project", "core", "hosted", "integrations"],
+      "enforcement": {
+        "mode": "mixed",
+        "mechanisms": ["runtime/contract release separation tests", "release gates", "hosted release-identity review"]
+      },
+      "evidence": ["ADR-011", "ADR-014", "ROADMAP"]
+    },
+    {
+      "id": "RT-SEM-001",
+      "status": "active",
+      "classification": "SEM",
+      "statement": "Canonical memory mutation semantics have one implementation authority in Core; other components may invoke or independently replay those Core-owned semantics but must not create a second semantic implementation.",
+      "scope": ["project", "core", "hosted", "integrations"],
+      "enforcement": {
+        "mode": "mixed",
+        "mechanisms": ["MemoryService tests", "independent Core replay design", "exact-head architecture review"]
+      },
+      "evidence": ["ADR-002", "ADR-020", "ADR-021"]
+    }
+  ]
+}
