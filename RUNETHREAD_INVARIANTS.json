@@ -40,7 +40,7 @@
       "id": "RT-DATA-001",
       "status": "active",
       "classification": "DATA",
-      "statement": "The user-owned Git repository is canonical durable semantic memory state; derived indexes, caches, and project-orientation views are not sole semantic authority.",
+      "statement": "The user-owned memory Git repository is canonical durable semantic memory state; derived indexes, caches, summaries, and project-orientation views are non-authoritative derived state.",
       "scope": ["project", "core", "hosted", "memory-template"],
       "enforcement": {
         "mode": "mixed",
@@ -52,7 +52,7 @@
       "id": "RT-GOV-001",
       "status": "active",
       "classification": "GOV",
-      "statement": "Material recommendations and changes are evaluated against the actual project objective, evidence, costs, simpler alternatives, and accepted constraints; unresolved material ambiguity is surfaced rather than silently assumed.",
+      "statement": "Material recommendations and changes are optimized for the actual project objective rather than agreement-seeking or novelty, using evidence, costs, simpler alternatives, and accepted constraints; when unresolved material ambiguity could change the decision, clarification is sought rather than silently assumed.",
       "scope": ["project", "contributors", "agents"],
       "enforcement": {
         "mode": "mixed",
