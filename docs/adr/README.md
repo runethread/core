@@ -41,6 +41,7 @@ The architecture documents describe the target system. Accepted decisions govern
 | [ADR-024](ADR-024-deterministic-safety-journal-lineage-and-hosted-provider-tcb.md) | Deterministic safety-journal lineage and hosted provider TCB | Accepted |
 | [ADR-025](ADR-025-publication-quiescence-includes-remote-requests.md) | Publication quiescence includes remote requests | Accepted |
 | [ADR-026](ADR-026-runethread-licensing-and-commercial-model.md) | Runethread licensing and commercial model | Accepted |
+| [ADR-027](ADR-027-project-invariant-registry-and-decision-discipline.md) | Project invariant registry and decision discipline | Accepted |
 
 ADR-014 amends the initial GitHub-Actions-backed implementation profile described in ADR-012/ADR-013. Their candidate-before-canonical, independent-audit, exact-revision publication, idempotency, stale-reprepare, and per-repository serialization invariants remain accepted.
 
@@ -67,6 +68,8 @@ ADR-024 freezes the concrete Phase 2.6 v1 safety-journal protocol that ADR-019 h
 ADR-025 requires publication quiescence to cover delayed gateway/token issuance and every possibly admitted remote ref-update request. Executor termination and token expiry alone do not prove server completion. Enforced immutable issuance/dispatch cutoffs and rollback-independent completion evidence constrain recovery; absent proof, v1 remains in doubt without automatic retry or lane release, potentially indefinitely.
 
 ADR-026 establishes the project-wide licensing/commercial model. Current Core and Hosted implementation source uses PolyForm Perimeter 1.0.1 after each repository's reviewed transition. The only prospective permissive interoperability grant is the **exact machine-guarded MIT exception** recorded in `LICENSING_BOUNDARY.json`; **Perimeter remains the default outside that exception**. `AI_SETUP.md` future changes are outside the prospective exception, generated output is permissive only at exact approved byte identities, and the public memory template is not blanket-licensed by repository membership. Historical MIT grants remain intact, user-authored data is outside the software-license grant, commercial exceptions remain possible, and explicit inbound-rights policy is required before material third-party source contributions are merged when separate commercial-licensing flexibility is intended.
+
+ADR-027 establishes the project-wide invariant registry and decision discipline. `RUNETHREAD_INVARIANTS.json` is the canonical machine-readable set of active project invariants, intentionally smaller than the ADR catalog. ADRs continue to own architecture/design decisions; implementation details and milestone/version constraints are not promoted merely because they are important today. Substantive changes must classify invariant impact, agents and contributors must reason from the actual project objective rather than agreement-seeking or novelty, and specialized exact machine authorities such as the ADR-026 boundary remain single sources of truth rather than being duplicated into the general registry.
 
 ## ADR format
 
