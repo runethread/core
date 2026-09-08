@@ -7,6 +7,7 @@
 Check every class that applies.
 
 - [ ] Development infrastructure / CI / engineering policy
+- [ ] Invariant registry / project governance
 - [ ] Documentation-only / non-normative
 - [ ] Runtime-only implementation
 - [ ] Public API / CLI
@@ -34,10 +35,19 @@ Check every class that applies.
 
 - [ ] Every changed file belongs to the declared branch/PR purpose.
 - [ ] Any defect discovered by CI was classified by product semantics, not assumed to be CI-only.
-- [ ] No accepted/rejected repository state, trust rule, bootstrap/starter output, schema/contract behavior, migration behavior, public API/CLI behavior, or licensing/rights boundary changed without the corresponding change class and required review.
+- [ ] No accepted/rejected repository state, trust rule, bootstrap/starter output, schema/contract behavior, migration behavior, public API/CLI behavior, licensing/rights boundary, or active invariant changed without the corresponding change class and required review.
 - [ ] If scope changed materially during implementation, exploratory evidence was preserved and the final work was recreated/rebased on a clean verified base rather than hidden with a force-push.
 
 Scope decision / evidence:
+
+## Invariant impact
+
+- [ ] Active registry reviewed: `RUNETHREAD_INVARIANTS.json` and `docs/runethread/INVARIANTS.md`.
+- [ ] This PR leaves all active invariants unchanged, **or** every strengthened/new/weakened/scoping change is identified below.
+- [ ] No active invariant is weakened silently through an implementation, dependency, provider, compatibility, or policy change.
+- [ ] Any candidate discovered during this work was classified as project invariant vs architecture/design decision vs implementation detail vs milestone/version constraint vs aspiration before registry admission.
+
+Invariant IDs affected / classification decision:
 
 ## Impact matrix
 
@@ -46,6 +56,7 @@ For each relevant surface, state **changed / unchanged** and why. Do not leave a
 | Surface | Impact / evidence |
 | --- | --- |
 | Development pipeline / required checks | |
+| Project invariants / enforcement evidence | |
 | Canonical memory bytes / UUIDs / provenance | |
 | `projects/` / unrelated user data | |
 | `.runethread` config / lock | |
@@ -81,7 +92,7 @@ Details:
 
 ## Failure modes
 
-<!-- Stale revisions, concurrency, idempotent retry, validation failure, tampering, rollback, unsupported newer state, platform-specific behavior, release interruption, licensing/notice drift, etc. -->
+<!-- Stale revisions, concurrency, idempotent retry, validation failure, tampering, rollback, unsupported newer state, platform-specific behavior, release interruption, licensing/notice drift, invariant drift, etc. -->
 
 ## Contract/versioning gate
 
@@ -148,14 +159,14 @@ Evidence / exact SHA:
 - [ ] No temporary verifier/fixer workflow or script leaked into the final diff.
 - [ ] Validation CI is read-only; it does not commit/push source fixes.
 - [ ] Required Actions remain pinned to immutable full commit SHAs.
-- [ ] `.gitattributes`, Dependabot, CODEOWNERS, agent policy, licensing policy, and policy guards remain present.
+- [ ] `.gitattributes`, Dependabot, CODEOWNERS, agent policy, invariant policy, licensing policy, and policy guards remain present.
 - [ ] Comments/reviews/review threads checked.
 - [ ] Base has not moved unexpectedly, or the PR was updated and revalidated.
 - [ ] No unexplained changed file remains.
 
 ## Release / downstream plan
 
-<!-- State explicitly whether this PR needs a release, license/notice packaging change, template update, private-repository migration, or none. Development-pipeline work does not implicitly authorize managed memory-repository/bootstrap changes. -->
+<!-- State explicitly whether this PR needs a release, license/notice packaging change, invariant follow-up, template update, private-repository migration, or none. Development-pipeline work does not implicitly authorize managed memory-repository/bootstrap changes. -->
 
 ## Remaining concerns / uncertainty
 

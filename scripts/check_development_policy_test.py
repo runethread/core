@@ -443,6 +443,49 @@ def test_pipeline_platform_bypass_rule_remains() -> None:
         shutil.rmtree(root)
 
 
+def test_invariant_governance_surfaces_are_present_and_wired() -> None:
+    required = (
+        "RUNETHREAD_INVARIANTS.json",
+        "docs/adr/ADR-027-project-invariant-registry-and-decision-discipline.md",
+        "docs/runethread/INVARIANTS.md",
+        "invariants_policy_test.go",
+    )
+    for rel in required:
+        path = ROOT / rel
+        if not path.is_file():
+            raise AssertionError(f"required invariant-governance surface is missing: {rel}")
+
+    markers = {
+        "invariants_policy_test.go": (
+            "foundationInvariantEntries",
+            "allowedInvariantScopes",
+            "TestInvariantRegistryPolicy",
+            "TestInvariantRegistryRejectsFoundationPolicyDrift",
+            "TestInvariantRegistryRejectsUndeclaredScope",
+            "TestInvariantRegistryRejectsTrailingJSON",
+            "TestInvariantGovernanceIntegrationMarkers",
+        ),
+        "AGENTS.md": (
+            "RUNETHREAD_INVARIANTS.json",
+            "## Decision discipline",
+            "seek clarification",
+        ),
+        ".github/pull_request_template.md": (
+            "## Invariant impact",
+            "No active invariant is weakened silently",
+        ),
+        ".github/CODEOWNERS": (
+            "/RUNETHREAD_INVARIANTS.json @Karageorgiou",
+            "/invariants_policy_test.go @Karageorgiou",
+        ),
+    }
+    for rel, expected in markers.items():
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        for marker in expected:
+            if marker not in text:
+                raise AssertionError(f"{rel}: missing invariant-governance marker {marker!r}")
+
+
 def main() -> None:
     tests = [value for name, value in sorted(globals().items()) if name.startswith("test_") and callable(value)]
     for test in tests:
