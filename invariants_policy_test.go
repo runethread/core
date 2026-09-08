@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"sort"
@@ -14,22 +15,25 @@ import (
 
 const invariantRegistryPath = "RUNETHREAD_INVARIANTS.json"
 
-var invariantIDPattern = regexp.MustCompile(`^RT-([A-Z]+)-([0-9]{3})$`)
+var (
+	invariantIDPattern          = regexp.MustCompile(`^RT-([A-Z]+)-([0-9]{3})$`)
+	classificationPrefixPattern = regexp.MustCompile(`^[A-Z]+$`)
+)
 
 var foundationInvariantStatements = map[string]string{
 	"RT-ARCH-001": "Core remains provider-neutral; provider-specific hosted and integration dependencies, credentials, and execution authority live outside Core.",
 	"RT-ARCH-002": "Correctness-relevant behavior crosses component boundaries through explicit versioned contracts or immutable identities, not through unversioned internal implementation coupling.",
 	"RT-DATA-001": "The user-owned Git repository is canonical durable semantic memory state; derived indexes, caches, and project-orientation views are not sole semantic authority.",
 	"RT-GOV-001":  "Material recommendations and changes are evaluated against the actual project objective, evidence, costs, simpler alternatives, and accepted constraints; unresolved material ambiguity is surfaced rather than silently assumed.",
-	"RT-REL-001":  "Released or hosted execution is bound to explicit immutable verified component, contract, and protocol identities and does not execute floating development branches as production authority.",
+	"RT-REL-001":  "Released or hosted execution is bound to explicit immutable verified identities for every correctness-relevant component, contract, and protocol it relies on, and does not execute floating development branches as production authority.",
 	"RT-SEM-001":  "Canonical memory mutation semantics have one implementation authority in Core; other components may invoke or independently replay those Core-owned semantics but must not create a second semantic implementation.",
 }
 
 type invariantRegistry struct {
-	FormatVersion   int               `json:"format_version"`
+	FormatVersion   int                `json:"format_version"`
 	Authority       invariantAuthority `json:"authority"`
-	Classifications map[string]string `json:"classifications"`
-	Invariants      []invariantEntry  `json:"invariants"`
+	Classifications map[string]string  `json:"classifications"`
+	Invariants      []invariantEntry   `json:"invariants"`
 }
 
 type invariantAuthority struct {
@@ -59,8 +63,12 @@ func loadInvariantRegistry(data []byte) (invariantRegistry, error) {
 	if err := decoder.Decode(&registry); err != nil {
 		return invariantRegistry{}, fmt.Errorf("decode invariant registry: %w", err)
 	}
-	if decoder.More() {
-		return invariantRegistry{}, errors.New("decode invariant registry: trailing JSON values")
+	var trailing any
+	if err := decoder.Decode(&trailing); !errors.Is(err, io.EOF) {
+		if err == nil {
+			return invariantRegistry{}, errors.New("decode invariant registry: trailing JSON values")
+		}
+		return invariantRegistry{}, fmt.Errorf("decode invariant registry trailing data: %w", err)
 	}
 	return registry, nil
 }
@@ -76,7 +84,7 @@ func validateInvariantRegistry(registry invariantRegistry) error {
 		return errors.New("classifications must not be empty")
 	}
 	for prefix, description := range registry.Classifications {
-		if !regexp.MustCompile(`^[A-Z]+$`).MatchString(prefix) {
+		if !classificationPrefixPattern.MatchString(prefix) {
 			return fmt.Errorf("classification prefix %q is invalid", prefix)
 		}
 		if strings.TrimSpace(description) == "" {
@@ -177,6 +185,30 @@ func TestInvariantRegistryPolicy(t *testing.T) {
 	registry := currentInvariantRegistry(t)
 	if err := validateInvariantRegistry(registry); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestInvariantRegistryRejectsUnknownField(t *testing.T) {
+	data, err := os.ReadFile(invariantRegistryPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mutated := bytes.Replace(data, []byte(`"format_version": 1,`), []byte(`"format_version": 1, "unexpected": true,`), 1)
+	if bytes.Equal(mutated, data) {
+		t.Fatal("failed to create unknown-field test fixture")
+	}
+	if _, err := loadInvariantRegistry(mutated); err == nil || !strings.Contains(err.Error(), "unknown field") {
+		t.Fatalf("expected unknown-field failure, got %v", err)
+	}
+}
+
+func TestInvariantRegistryRejectsTrailingJSON(t *testing.T) {
+	data, err := os.ReadFile(invariantRegistryPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := loadInvariantRegistry(append(data, []byte("\n{}\n")...)); err == nil || !strings.Contains(err.Error(), "trailing JSON values") {
+		t.Fatalf("expected trailing-JSON failure, got %v", err)
 	}
 }
 
