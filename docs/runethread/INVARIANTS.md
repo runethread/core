@@ -47,7 +47,17 @@ Current enforcement modes are:
 
 The mode describes present evidence honestly. `review` is not a failure, and `machine` must not be claimed merely because a green test exists somewhere.
 
-Invariant IDs are never reused for a different meaning. v1 contains active entries only. Retirement, statement replacement, or a schema change requires a reviewed governance change rather than silently rewriting historical meaning.
+Invariant IDs are never reused for a different meaning. v1 contains active entries only. Retirement, statement replacement, scope change, enforcement-policy change, or a schema change requires a reviewed governance change rather than silently rewriting historical meaning. The v1 policy test protects the full initial entries — not only their prose statements — against accidental drift while still allowing deliberate reviewed growth with new IDs.
+
+The v1 scope vocabulary is deliberately closed to the currently known project surfaces. Adding a new scope is itself an explicit governance change so misspellings or invented pseudo-scopes cannot silently weaken applicability.
+
+## Cross-repository consumption
+
+**Scope means applicability, not proof strength.** An invariant that names `hosted`, `memory-template`, or `integrations` applies to that surface, but v1 does not claim that every scoped repository already has equivalent local machine enforcement.
+
+`runethread/core` remains the single canonical registry. Other repositories must not copy and independently redefine the invariant statements. Before a scoped repository's next substantive change, contributors or agents must read the current protected Core registry and relevant accepted ADRs, classify invariant impact, and fail closed if that authority cannot be verified. Repository-local guard/PR wiring may be added when it materially improves enforcement, but it should reference the canonical invariant IDs rather than create a second registry.
+
+This keeps the policy project-wide without pretending that a Core CI job can mechanically prove code in a different repository.
 
 ## Change discipline
 
@@ -77,7 +87,7 @@ Before recommending or accepting a material design or implementation decision, c
 4. state meaningful costs, maintenance burden, attack surface, coupling, and lock-in;
 5. consider a simpler option that could achieve the same objective;
 6. check the proposal against accepted ADRs and active invariants;
-7. surface genuinely material ambiguity rather than silently choosing a preference on the user's or project's behalf.
+7. when unresolved material ambiguity could change the decision, seek clarification from the decision owner rather than silently choosing a preference or assumption.
 
 `No change` is a valid recommendation when additional machinery does not materially improve the objective.
 
@@ -94,12 +104,12 @@ Evidence snapshot:
 
 | ID | Why it survives implementation change |
 | --- | --- |
-| `RT-DATA-001` | Runethread's value proposition depends on user-owned Git remaining the durable semantic authority rather than a provider cache or generated view. |
+| `RT-DATA-001` | Runethread's value proposition depends on the user-owned memory Git repository remaining the durable semantic authority while indexes, caches, summaries, and orientation views remain derived. |
 | `RT-SEM-001` | A second mutation engine would create semantic drift and destroy deterministic cross-provider behavior. |
 | `RT-ARCH-001` | Provider churn must not infect Core's semantic engine or authority boundary. |
 | `RT-ARCH-002` | Component replacement stays safe only when correctness crosses explicit identities/contracts rather than hidden internals. |
 | `RT-REL-001` | Reproducibility and recovery require execution to be tied to immutable verified identities rather than floating development state. |
-| `RT-GOV-001` | The project needs decisions optimized for its actual objective rather than agreement, novelty, or accumulated machinery. |
+| `RT-GOV-001` | The project needs decisions optimized for its actual objective rather than agreement or novelty, with clarification when unresolved ambiguity could materially change the choice. |
 
 ### Considered but not admitted
 
