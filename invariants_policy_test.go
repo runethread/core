@@ -16,7 +16,7 @@ import (
 const invariantRegistryPath = "RUNETHREAD_INVARIANTS.json"
 
 var (
-	invariantIDPattern           = regexp.MustCompile(`^RT-([A-Z]+)-([0-9]{3})$`)
+	invariantIDPattern          = regexp.MustCompile(`^RT-([A-Z]+)-([0-9]{3})$`)
 	classificationPrefixPattern = regexp.MustCompile(`^[A-Z]+$`)
 )
 
