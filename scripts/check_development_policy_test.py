@@ -457,14 +457,18 @@ def test_invariant_governance_surfaces_are_present_and_wired() -> None:
 
     markers = {
         "invariants_policy_test.go": (
-            "foundationInvariantStatements",
+            "foundationInvariantEntries",
+            "allowedInvariantScopes",
             "TestInvariantRegistryPolicy",
+            "TestInvariantRegistryRejectsFoundationPolicyDrift",
+            "TestInvariantRegistryRejectsUndeclaredScope",
             "TestInvariantRegistryRejectsTrailingJSON",
             "TestInvariantGovernanceIntegrationMarkers",
         ),
         "AGENTS.md": (
             "RUNETHREAD_INVARIANTS.json",
             "## Decision discipline",
+            "seek clarification",
         ),
         ".github/pull_request_template.md": (
             "## Invariant impact",
