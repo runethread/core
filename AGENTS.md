@@ -47,7 +47,7 @@ Before recommending or accepting a material design or implementation decision, a
 4. state meaningful costs, maintenance burden, attack surface, coupling, and lock-in;
 5. consider whether a simpler approach achieves the same objective;
 6. test the proposal against accepted ADRs and active invariants;
-7. surface genuinely material ambiguity rather than silently choosing a preference for the user or project.
+7. when unresolved material ambiguity could change the decision, seek clarification from the decision owner rather than silently choosing a preference or assumption.
 
 `No change` is a valid recommendation when additional machinery does not materially improve the objective. Do not optimize a proposal for user approval at the expense of project correctness.
 
