@@ -22,6 +22,8 @@ A second governance risk is recommendation drift. An agent or contributor can pr
 
 The registry is project-wide even though Core stores the authority file. Other repositories consume or are constrained by entries according to their declared scope; they do not maintain competing copies of the same invariant statements.
 
+Scope means applicability, not proof strength. v1 does not claim that Core CI mechanically proves every scoped repository. Before the next substantive change in a scoped repository, contributors or agents must read the current protected Core registry and relevant accepted ADRs, classify invariant impact, and fail closed if that authority cannot be verified. Repository-local guard or PR wiring may be added when it materially improves enforcement, but it references canonical invariant IDs instead of redefining the statements.
+
 ### 2. The registry remains intentionally small
 
 A registry entry is admitted only when it represents a durable truth that should survive plausible replacement of today's provider, toolchain, runtime technique, queue implementation, or other implementation detail.
@@ -51,7 +53,11 @@ Every active v1 invariant records:
 
 The enforcement modes are `machine`, `mixed`, and `review`. They describe the present strength of evidence honestly; the project does not claim complete mechanical proof merely because some tests exist.
 
-IDs are not reused for a different meaning. v1 contains active entries only. Retirement, semantic replacement, or a registry-format change requires a deliberate reviewed governance change.
+IDs are not reused for a different meaning. v1 contains active entries only. Retirement, semantic replacement, scope change, enforcement-policy change, or a registry-format change requires a deliberate reviewed governance change.
+
+The initial v1 entries are protected as complete policy records rather than protecting only their prose statements. Their status, classification, statement, scope, enforcement mode/mechanisms, and evidence references are all part of the reviewed foundation. The enforcement fixture is a guard against accidental drift, not a competing source of project policy: the registry remains the canonical declaration, and an intentional policy change must update both declaration and enforcement in one reviewed governance change.
+
+The v1 scope vocabulary is closed to known project surfaces. Adding a new scope is deliberate governance work rather than an unvalidated free-text edit.
 
 ### 4. Initial entries are extracted from existing system commitments
 
@@ -59,12 +65,12 @@ The initial registry is based on a classification run against exact live snapsho
 
 The initial active set covers:
 
-- canonical user-owned Git state;
+- canonical user-owned memory Git state and non-authoritative derived views;
 - single Core semantic mutation authority;
 - provider-neutral Core;
 - explicit versioned/immutable cross-component boundaries;
 - immutable verified release/execution identities rather than floating development state;
-- decision discipline tied to the actual project objective.
+- decision discipline tied to the actual project objective, including clarification when unresolved material ambiguity could change the decision.
 
 `docs/runethread/INVARIANTS.md` records the classification method, exact evidence snapshot, admitted entries, and examples that were deliberately **not** promoted into invariants.
 
@@ -92,7 +98,7 @@ Before recommending or accepting a material design or implementation decision, t
 4. state meaningful costs, maintenance burden, attack surface, coupling, and lock-in;
 5. consider whether a simpler approach reaches the same goal;
 6. test the proposal against accepted ADRs and active invariants;
-7. surface genuinely material ambiguity rather than silently choosing a preference for the user/project.
+7. when unresolved material ambiguity could change the decision, seek clarification from the decision owner rather than silently choosing a preference or assumption.
 
 `No change` is an acceptable conclusion.
 
@@ -110,7 +116,9 @@ Only the first two outcomes require registry/governance work.
 
 The initial foundation adds no service, provider resource, runtime dependency, or new CI workflow.
 
-A Go policy test validates the registry structure, stable foundation statements, integration markers, and growth rules. Existing `go test ./...` / race / cross-platform jobs therefore exercise the invariant foundation without adding a new toolchain or modifying the protected validation workflow.
+A Go policy test validates the registry structure, closed scope vocabulary, complete initial policy entries, integration markers, and growth rules. Existing `go test ./...` / race / cross-platform jobs therefore exercise the invariant foundation without adding a new toolchain or modifying the protected validation workflow.
+
+The already-directly-executed development-policy self-test also requires the invariant governance surfaces and their essential wiring to exist, so deleting the registry or its Go policy test does not silently make the invariant checks disappear from ordinary CI.
 
 Exact-head adversarial review remains necessary because a PR can change its own policy/tests. The invariant system does not claim to solve the already documented CI self-protection limitation.
 
@@ -122,7 +130,8 @@ Exact-head adversarial review remains necessary because a PR can change its own 
 - New contributors and agents have a project-native decision discipline rather than relying on conversational memory.
 - Every active invariant exposes the current strength and gaps of its enforcement instead of pretending all principles are mechanically provable.
 - Specialized exact policy manifests remain single sources of truth rather than being duplicated into a general registry.
-- The initial system adds very little operational complexity: one registry, one policy document, one test, and PR/agent governance wiring.
+- Cross-repository applicability is explicit without pretending one repository's CI proves another repository's source.
+- The initial system adds very little operational complexity: one registry, one policy document, one test, and PR/agent/governance wiring.
 
 ## Alternatives considered
 
@@ -146,16 +155,22 @@ Rejected for project-wide truths because duplicated statements would drift. Repo
 
 Rejected. Some important architecture properties require semantic review. The registry records `review` or `mixed` enforcement honestly until a reliable machine proof exists.
 
+### Leave scope as unrestricted free text
+
+Rejected. Silent misspellings or invented pseudo-scopes would undermine the purpose of declaring applicability. v1 uses a closed known scope vocabulary and requires a governance change when a genuinely new project surface appears.
+
 ## Verification
 
 The foundation is acceptable only when:
 
 1. the registry parses under the v1 policy test;
-2. foundation IDs and statements match the accepted ADR exactly;
-3. entries have valid classifications, scopes, evidence, and enforcement declarations;
-4. registry growth remains possible without changing the foundation statements;
-5. `AGENTS.md` requires the invariant authority and decision discipline;
+2. every complete initial foundation entry matches its reviewed enforcement fixture, including status, classification, statement, scope, enforcement policy, and evidence references;
+3. scopes come from the closed v1 vocabulary and entries otherwise have valid classifications and structure;
+4. registry growth with a new well-formed ID remains possible without rewriting existing foundation entries;
+5. `AGENTS.md` requires the invariant authority and decision discipline, including clarification when unresolved material ambiguity could change a decision;
 6. the PR template requires invariant-impact reporting;
 7. CODEOWNERS covers the registry, policy document, ADR, and policy test;
-8. the exact candidate passes the existing Linux, race, macOS, Windows, and aggregate validation pipeline;
-9. a fresh exact-head adversarial review finds zero required corrections before merge.
+8. the directly executed development-policy self-test fails if the invariant registry/test surfaces or essential governance wiring disappear;
+9. cross-repository scope is documented as applicability rather than falsely claimed machine proof;
+10. the exact candidate passes the existing Linux, race, macOS, Windows, and aggregate validation pipeline;
+11. a fresh exact-head adversarial review finds zero required corrections before merge.
