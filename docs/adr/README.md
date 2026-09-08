@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Runethread uses Architecture Decision Records (ADRs) for durable architectural choices that affect compatibility, trust, security, state ownership, or component boundaries.
+Runethread uses Architecture Decision Records (ADRs) for durable architectural choices that affect compatibility, trust, security, state ownership, component boundaries, or project-wide licensing/commercial policy.
 
 The architecture documents describe the target system. Accepted decisions govern implementation until they are explicitly superseded.
 
@@ -40,6 +40,7 @@ The architecture documents describe the target system. Accepted decisions govern
 | [ADR-023](ADR-023-rollback-durable-terminal-dispositions.md) | Rollback-durable terminal operation dispositions | Accepted |
 | [ADR-024](ADR-024-deterministic-safety-journal-lineage-and-hosted-provider-tcb.md) | Deterministic safety-journal lineage and hosted provider TCB | Accepted |
 | [ADR-025](ADR-025-publication-quiescence-includes-remote-requests.md) | Publication quiescence includes remote requests | Accepted |
+| [ADR-026](ADR-026-runethread-licensing-and-commercial-model.md) | Runethread licensing and commercial model | Accepted |
 
 ADR-014 amends the initial GitHub-Actions-backed implementation profile described in ADR-012/ADR-013. Their candidate-before-canonical, independent-audit, exact-revision publication, idempotency, stale-reprepare, and per-repository serialization invariants remain accepted.
 
@@ -64,6 +65,8 @@ ADR-023 generalizes rollback-safe terminalization across the entire hosted lifec
 ADR-024 freezes the concrete Phase 2.6 v1 safety-journal protocol that ADR-019 had intentionally left open. Each repository binding epoch uses one strictly sequential, exact-byte hash-linked, conditional-create journal lineage; conditional object creation is the append linearization point, and destructive recovery proves the complete tail then wins a `RECOVERY_BARRIER` before normal work can reopen. Active epochs are not compacted or routinely rotated in v1. ADR-024 also makes the hosted threat model explicit: Runethread's Cloudflare account/provider execution, secrets, Durable Object, and private evidence-store integrity/availability are inside the v1 TCB, and the architecture does not claim zero-knowledge or survival of malicious Cloudflare administrative/provider compromise. Where ADR-019 allowed multiple equivalent journal schemes, ADR-024 controls the v1 journal protocol.
 
 ADR-025 requires publication quiescence to cover delayed gateway/token issuance and every possibly admitted remote ref-update request. Executor termination and token expiry alone do not prove server completion. Enforced immutable issuance/dispatch cutoffs and rollback-independent completion evidence constrain recovery; absent proof, v1 remains in doubt without automatic retry or lane release, potentially indefinitely.
+
+ADR-026 establishes the project-wide licensing/commercial model. Current Core and Hosted implementation source uses PolyForm Perimeter 1.0.1 after each repository's reviewed transition. The only prospective permissive interoperability grant is the **exact machine-guarded MIT exception** recorded in `LICENSING_BOUNDARY.json`; **Perimeter remains the default outside that exception**. `AI_SETUP.md` future changes are outside the prospective exception, generated output is permissive only at exact approved byte identities, and the public memory template is not blanket-licensed by repository membership. Historical MIT grants remain intact, user-authored data is outside the software-license grant, commercial exceptions remain possible, and explicit inbound-rights policy is required before material third-party source contributions are merged when separate commercial-licensing flexibility is intended.
 
 ## ADR format
 

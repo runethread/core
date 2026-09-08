@@ -1,0 +1,47 @@
+{
+  "format_version": 1,
+  "default_implementation_license": "PolyForm Perimeter 1.0.1",
+  "mit_contract_paths": [
+    "MEMORY_PROTOCOL.md",
+    "schema/memory-item.schema.json",
+    "docs/MEMORY_SCHEMA.md",
+    "docs/MEMORY_CONTENT_FORMAT.md",
+    "docs/TAXONOMY.md",
+    "docs/REPOSITORY_VALIDATION.md",
+    "docs/USER_COMMANDS.md",
+    "docs/EXTENDING_RUNETHREAD.md",
+    "docs/TRUST_MODEL.md",
+    "docs/SOURCES.md",
+    "docs/INDEX_FORMAT.md",
+    "templates/fact.md",
+    "templates/preference.md",
+    "templates/decision.md",
+    "templates/state.md",
+    "templates/open_loop.md",
+    "templates/correction.md",
+    "templates/milestone.md",
+    "templates/reference.md"
+  ],
+  "mit_bootstrap_interface_sha256": {
+    "runethread-bootstrap.json": "23c71ec28f548755cba680a318e1ad344c1f419de403104d1a46a5512625742d"
+  },
+  "mit_generated_output_sha256": {
+    ".gitattributes": "435050e549a9be1ba0793b25299caa35bd8bdda818e222281e297e19e4ced20d",
+    "README.md": "5569022c660cc1f14d8d437fb894dbda18270963d9c11b1041551819f181202a",
+    ".github/workflows/validate.yml": "b9caad673504e7e57acb1910ed2fc882382f13d2af063fe13417fcb76b8d0790",
+    ".runethread/config.json": "f3c02ea03647140205836c3185ee5cd1756e063c5962ef29e816adc3b849d6f9",
+    ".runethread/lock.json": "bca8aeb88a58684f80d6d65880a0aba7c2468b9bf208de283eb76b6ec7e81a52",
+    "index/catalog.json": "42d46a5eda6e577f859b56bc92ed5fb9f1043444231d8d92cd88344307181734",
+    "index/open-loops.md": "3b9f81135065f237e48020999c9f056432a05856341317df007d7b96325156ea",
+    "index/preferences.md": "cd05ac6c1bc3a5df1943d25f9a3ea97d8d56aaf3a30e07f6dd3a6cd7c53d4cb5",
+    "index/projects.md": "ded8999df1c7f664ebb774062c7ae03d14e22c44b204e5c7db1b75ad711bc697"
+  },
+  "generated_empty_placeholders_sha256": {
+    "memories/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "projects/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "historical_boundaries": {
+    "core_main_pretransition_commit": "22995a7cf7d1c6c0f4ce548fd83667468b356f42",
+    "first_public_branch_perimeter_root_commit": "4bd5279a91ca894f6ccb13db91360f6ba95b6576"
+  }
+}

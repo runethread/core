@@ -2,24 +2,24 @@
 
 Status: **Active project policy**
 
-Runethread preserves durable user memory. A defect in repository compatibility, trust, migration, or mutation logic can compound across releases and user repositories. Development therefore optimizes for **recoverability, explicit evidence, small reviewable changes, and early detection of wrong assumptions** rather than speed of implementation.
+Runethread preserves durable user memory. A defect in repository compatibility, trust, migration, mutation logic, or licensing/rightsholder policy can compound across releases and user repositories. Development therefore optimizes for **recoverability, explicit evidence, small reviewable changes, and early detection of wrong assumptions** rather than speed of implementation.
 
-This document governs substantive changes to `runethread/core`. Accepted ADRs govern architecture; this document governs how changes to that architecture are planned, implemented, verified, reviewed, released, and corrected.
+This document governs substantive changes to `runethread/core`. Accepted ADRs govern architecture and durable project-wide licensing decisions; this document governs how changes to that architecture are planned, implemented, verified, reviewed, released, licensed, and corrected.
 
 ---
 
 ## 1. Core development principles
 
 1. **Live repository state beats remembered context.** Previous-chat summaries and planning notes are orientation material, not verification.
-2. **One canonical owner per fact.** Project source, architecture, ADRs, compatibility policy, and engineering procedure live in the project repository. Personal memory may point to them but must not replace them.
-3. **Deterministic invariants require deterministic tests.** Semantic judgment may identify intent, but storage, versioning, trust, validation, migration, concurrency, and release invariants must be enforced by code/tests where practical.
+2. **One canonical owner per fact.** Project source, architecture, ADRs, compatibility policy, licensing policy, and engineering procedure live in the project repository. Personal memory may point to them but must not replace them.
+3. **Deterministic invariants require deterministic tests.** Semantic judgment may identify intent, but storage, versioning, trust, validation, migration, concurrency, release, and mechanically checkable licensing-policy invariants must be enforced by code/tests where practical.
 4. **A green build is necessary, not sufficient.** Tests prove only what was asserted. Every meaningful change also requires impact, backward, forward, negative, and cross-surface review.
-5. **Published history is immutable evidence.** Do not reinterpret released contract semantics to avoid a version or migration.
+5. **Published history is immutable evidence.** Do not reinterpret released contract semantics or historical license grants to avoid a version, migration, or rights boundary.
 6. **Historical compatibility uses historical state.** Never manufacture an old released state with a new generator when its bytes or semantics may differ.
 7. **Validation is observational.** CI may test and report; it must not repair source or push commits to the branch it validates.
-8. **Unexpected state stops writes.** A contradiction, race, stale base, unexplained diff, or incomplete evidence is a reason to investigate before proceeding.
+8. **Unexpected state stops writes.** A contradiction, race, stale base, unexplained diff, unresolved rightsholder/license scope, or incomplete evidence is a reason to investigate before proceeding.
 9. **Failures must be recoverable.** Prefer explicit migrations, snapshots, optimistic concurrency, exact-source recognition, and rollback over permissive repair.
-10. **Evidence is attached to exact revisions.** Claims about tests, diffs, releases, or downstream migrations must identify the exact commit/release they verified.
+10. **Evidence is attached to exact revisions.** Claims about tests, diffs, releases, licensing transitions, or downstream migrations must identify the exact commit/release they verified.
 
 ---
 
@@ -29,7 +29,7 @@ Classify every substantive change before implementation. A change may belong to 
 
 | Class | Examples | Minimum additional review |
 | --- | --- | --- |
-| Documentation-only | explanatory docs, non-normative examples | verify no normative/control-plane impact |
+| Documentation-only | explanatory docs, non-normative examples | verify no normative/control-plane/licensing impact |
 | Runtime-only | performance, adapters, internal implementation | forward compatibility and API behavior |
 | Public API / CLI | JSON fields, commands, exit codes | compatibility, callers, docs, integration tests |
 | Dependency / toolchain | Go version, module, SDK | support floor, transitive deps, licenses, advisories, dependency graph |
@@ -39,10 +39,11 @@ Classify every substantive change before implementation. A change may belong to 
 | Index format | committed generated layout/semantics | version bump when format changes, rebuild/compatibility tests |
 | Bootstrap | onboarding machine protocol/setup behavior | protocol compatibility, old/new repository discovery |
 | Migration | supported source/target transitions | exact source fixture, rollback, canonical-data preservation |
-| Release / packaging | release workflow, artifacts, signing | immutable publication and artifact verification |
+| Release / packaging | release workflow, artifacts, signing | immutable publication, artifact verification, applicable license/notices |
 | Downstream repository | template or private memory migration | exact before/after invariants and post-merge validation |
+| Licensing / rights | root/file licenses, rightsholder identity, commercial model, interoperability boundary, inbound contribution rights, required notices | ADR-026/`LICENSING.md`, historical grants, user-data boundary, contributor rights, distribution notices |
 
-**Semantic impact controls classification.** A runtime-code change that changes behavior promised by the vendored operational contract is a contract change even if no contract file was edited initially.
+**Semantic impact controls classification.** A runtime-code change that changes behavior promised by the vendored operational contract is a contract change even if no contract file was edited initially. A documentation-looking change that changes a license/rightsholder/commercial-use boundary is licensing/rights work, not ordinary documentation-only work.
 
 ---
 
@@ -57,6 +58,7 @@ For a substantive change, capture and verify the following before the first sour
 - current CI status on `main`;
 - relevant implementation files and tests;
 - relevant accepted ADRs and normative contract files;
+- current `LICENSING.md`, applicable license files/rightsholder scope, and historical license boundary when rights or distribution may be affected;
 - supported historical source fixtures/releases affected by the change;
 - current downstream template/private-repository state when the change may affect them.
 
@@ -84,10 +86,11 @@ Record an explicit impact decision for every relevant surface:
 | MemoryService / CLI / API | Do request/result/error semantics change? |
 | Migration | Which exact historical states must reach the new state? |
 | Versioning | Which dimensions must advance, and why? |
-| Release tooling | Are tags/assets/install paths affected? |
+| Release tooling | Are tags/assets/install paths or required license/notice packaging affected? |
 | Dependencies / Go | Does the build floor, supply chain, license set, or supported platforms change? |
 | Template | Must `runethread/memory-template` change? |
 | Private memory | Must an existing user repository change? What invariants must remain byte-identical? |
+| Licensing / rights | Does the Perimeter implementation default, MIT interoperability boundary, historical grant, rightsholder identity, required notice, contributor-rights policy, or separate-commercial-license flexibility change? |
 | Security/privacy | Are privileges, secrets exposure, prompt-injection boundaries, or public/private data boundaries affected? |
 | Documentation | Which normative and non-normative docs encode the old assumption? |
 
@@ -122,6 +125,8 @@ A genuine contract change must normally include:
 
 Never retroactively reinterpret an immutable published contract to avoid these requirements.
 
+ADR-026 does not license material by role or category. Prospective MIT treatment is limited to the exact current material recorded in `LICENSING_BOUNDARY.json`; a contract-path change therefore requires confirming and, if intended, explicitly updating that machine-readable exception through reviewed licensing work. A root implementation license must not silently override the exact interoperability exception.
+
 ---
 
 ## 6. Historical / backward compatibility gate
@@ -150,6 +155,8 @@ For user-memory migrations, capture before the write:
 - project files;
 - trust/config state;
 - index state where relevant.
+
+Historical license grants are also immutable evidence. A later Perimeter default does not revoke MIT rights already granted for pre-transition material, including unchanged portions that remain in later trees.
 
 ---
 
@@ -202,7 +209,9 @@ Examples include:
 - unsupported newer schema/contract/repository format;
 - missing/stale generated indexes;
 - interrupted release publication;
-- incomplete artifact set.
+- incomplete artifact set;
+- missing/drifted license policy or Required Notice;
+- unresolved third-party contribution/rightsholder scope.
 
 Failure tests must assert the repository state that remains afterward, not merely the returned error.
 
@@ -257,6 +266,10 @@ GitHub branch protection and repository rulesets can report different partial vi
 
 SDK/toolchain support changes over time. Re-check authoritative current sources at the dependency decision point rather than freezing old research into the plan.
 
+### Rights metadata ambiguity
+
+Repository ownership, Git author metadata, merge authority, and bot/co-author trailers are not substitutes for copyright ownership or an inbound license grant. When licensing rights matter, verify the applicable project policy and available rights evidence rather than inferring chain of title from GitHub metadata alone.
+
 ---
 
 ## 11. Verification gate on the committed branch
@@ -305,7 +318,28 @@ Do not add a redundant GitHub dependency-submission workflow when the platform a
 
 ---
 
-## 13. Draft PR review gate
+## 13. Licensing / rights gate
+
+ADR-026 and `LICENSING.md` are authoritative for the current mixed licensing model.
+
+Before any change that affects license files, rightsholder identity, commercial-use boundaries, interoperability-license membership, contributor rights, or distributed notices:
+
+1. identify the exact material whose licensing changes and the rights evidence relied on;
+2. preserve historical MIT grants rather than describing them as revoked by a later repository-root license;
+3. preserve the exact prospective MIT exception recorded in `LICENSING_BOUNDARY.json`; do not infer MIT treatment from labels such as Memory Contract, bootstrap, generated support, documentation, or interoperability unless a new reviewed decision changes the manifest;
+4. keep user-authored memory/project/import/attachment data outside Runethread's software-license grant;
+5. do not treat repository ownership, merge authority, or a DCO-style origin certification as automatic separate-relicensing rights;
+6. before material third-party source is merged, require an explicit inbound-rights policy sufficient for that material's target licensing class and intended separate commercial licensing;
+7. verify every distribution path carries the terms/URL and required notices applicable to its covered artifacts;
+8. if rightsholder scope is unresolved, stop rather than publishing or making an unsupported license claim.
+
+Readable licensing consistency is also part of this gate. The development-policy guard must enumerate every Git-tracked regular file that decodes as UTF-8 text, regardless of extension or directory, and reject known global licensing statements that contradict ADR-026. Any readable file that starts discussing licensing/rightsholder/commercial-model terms must be deliberately classified in the guarded licensing-bearing surface. Files that do not discuss licensing need not repeat licensing boilerplate, while historical legal text and explicitly scoped MIT interoperability statements remain valid rather than being erased by a crude keyword ban.
+
+Core binaries embed MIT-covered `ContractFS` interoperability material. A post-transition Core binary is therefore a mixed-license distribution. No post-transition Core release may be requested or published until packaging is updated and verified to provide both the PolyForm Perimeter terms or URL plus every applicable `Required Notice:` for implementation **and** the MIT license/copyright notice for embedded or otherwise distributed interoperability material. Until that separately reviewed packaging change lands, the release workflow must fail closed for every requested version other than the already-published v0.9.0 baseline, and removing that block requires a coordinated guard/self-test update.
+
+---
+
+## 14. Draft PR review gate
 
 Substantive work enters GitHub as a **draft PR first**.
 
@@ -314,6 +348,7 @@ Before readiness:
 - verify base SHA and head SHA;
 - inspect the canonical GitHub PR patch/file list, not only local intent;
 - verify expected change class and impact matrix;
+- apply the Licensing / rights gate when relevant;
 - confirm no temporary workflow/script/test harness leaked into the final diff;
 - inspect API/CLI/docs naming for future ambiguity;
 - check PR comments, reviews, and review threads;
@@ -325,7 +360,7 @@ If a major premise was invalidated, close/supersede the PR. Do not merge merely 
 
 ---
 
-## 14. Merge gate
+## 15. Merge gate
 
 Before merge:
 
@@ -339,7 +374,7 @@ Prefer squash merge for a branch containing iterative implementation commits. Us
 
 ---
 
-## 15. Post-merge gate
+## 16. Post-merge gate
 
 After merge, independently verify:
 
@@ -348,13 +383,13 @@ After merge, independently verify:
 - merge parent/base relationship is expected;
 - commit verification/signature state where applicable;
 - permanent CI passes on merged `main`;
-- critical files contain the intended final semantics.
+- critical files contain the intended final semantics, including license/rightsholder policy when changed.
 
 Do not begin release or downstream migration until these checks pass.
 
 ---
 
-## 16. Release gate
+## 17. Release gate
 
 A release is a separate correctness boundary.
 
@@ -365,7 +400,8 @@ Before publication:
 - smoke-init/validate/index checks pass;
 - all intended platform binaries build;
 - checksum set is complete;
-- draft release target matches exact release commit.
+- draft release target matches exact release commit;
+- every covered artifact carries the license material applicable to what it contains; a post-ADR-026 Core binary requires Perimeter terms/URL + every `Required Notice:` for implementation and the MIT license/copyright notice for embedded `ContractFS` interoperability material before a release request may advance.
 
 After publication, independently verify:
 
@@ -373,13 +409,14 @@ After publication, independently verify:
 - target commit;
 - immutable/non-draft status;
 - expected asset names/count;
-- checksums/artifacts when practical.
+- checksums/artifacts when practical;
+- applicable Perimeter and/or MIT license/notice artifacts are actually present and correspond to the released material.
 
 Downstream template/private migrations start only after the immutable release is independently verified.
 
 ---
 
-## 17. Template and private-repository migration gate
+## 18. Template and private-repository migration gate
 
 For changes requiring repository migration:
 
@@ -394,9 +431,11 @@ For changes requiring repository migration:
 
 For canonical-data-preserving metadata migrations, use Git tree/blob identity where possible as an independent byte-preservation proof.
 
+Managed-file license/notice changes are not permission to license the repository as a whole. Preserve ADR-026's exact machine-enumerated MIT exception and explicitly keep user-authored data outside Runethread's software-license grant. Any future template/generated-user-repository distribution of MIT interoperability material must make the MIT license/copyright notice available for those managed files through the normal contract/bootstrap/release/downstream path; ADR-026 does not authorize opportunistic edits to current v0.9 user repositories merely to add notice files.
+
 ---
 
-## 18. Correction / incident protocol
+## 19. Correction / incident protocol
 
 Mistakes are expected to be **detectable and recoverable**, never hidden.
 
@@ -405,7 +444,7 @@ When a mistake or unexplained state is discovered:
 1. stop further writes;
 2. capture current branch/main SHAs and active workflow runs;
 3. identify exactly which action wrote what and when;
-4. distinguish product defect, test defect, harness defect, stale assumption, and tool limitation;
+4. distinguish product defect, test defect, harness defect, stale assumption, licensing/rights defect, and tool limitation;
 5. preserve evidence; do not force-push it away merely to make history look clean;
 6. correct the smallest affected layer;
 7. re-run broader regression checks that should have caught the issue;
@@ -413,11 +452,11 @@ When a mistake or unexplained state is discovered:
 9. close/supersede invalid PRs explicitly;
 10. report remaining uncertainty honestly.
 
-If a wrong change reaches `main` or a published release, prefer an explicit corrective commit/release/migration over rewriting public history.
+If a wrong change reaches `main` or a published release, prefer an explicit corrective commit/release/migration over rewriting public history or pretending a historical license grant never existed.
 
 ---
 
-## 19. Stop conditions
+## 20. Stop conditions
 
 Do not proceed to the next phase when any of these remain unresolved:
 
@@ -430,21 +469,36 @@ Do not proceed to the next phase when any of these remain unresolved:
 - CI results belong to an older head;
 - the PR diff contains unexplained files;
 - dependency/toolchain requirements are based on stale research;
-- a required downstream migration/release rollback path is undefined.
+- a required downstream migration/release rollback path is undefined;
+- a license/rightsholder/interoperability/user-data boundary is unresolved;
+- material third-party source lacks the required inbound-rights policy;
+- a covered release path cannot prove delivery of its applicable license terms/URL and required notices.
 
 A deliberate stop is a successful safety outcome, not a failure of progress.
 
 ---
 
-## 20. Current Phase 2.6 application
+## 21. Current Phase 2.6 application
 
-Phase 2.5 compatibility hardening is complete. The subsequent ADR-015 contract transition is also complete: Runethread v0.9.0 / contract v9 is the current immutable release, `runethread/memory-template` is migrated and validated at v0.9.0, and the known private memory repository is migrated and validated at v0.9.0 with the intended five managed paths changed and user-owned memory/project/index bytes preserved. ADR-012 through ADR-025 are accepted.
+Phase 2.5 compatibility hardening is complete. The subsequent ADR-015 contract transition is also complete: Runethread v0.9.0 / contract v9 is the current immutable release, `runethread/memory-template` is migrated and validated at v0.9.0, and the known private memory repository is migrated and validated at v0.9.0 with the intended five managed paths changed and user-owned memory/project/index bytes preserved. ADR-012 through ADR-026 are accepted as architectural/project-governance authority. ADR-026's system transition still requires the protected Core transition, the protected public-template MIT notice remediation, and the protected Hosted transition.
 
-Phase 2.6 Memory Write Delivery Pipeline is the current milestone. Phase 3 MCP implementation is blocked until Phase 2.6 satisfies issue #20.
+The Phase 2.6 architecture freeze is complete and the initial `runethread/hosted` repository safety/bootstrap slice is complete. Hosted main is protected and post-merge validated, but no Worker/runtime, Durable Object, R2 store, GitHub App, hosted mutation API, safety journal, finalizer, auditor/verifier, or publisher implementation exists yet.
+
+Phase 2.6 Memory Write Delivery Pipeline is the current engineering milestone. Phase 3 MCP implementation is blocked until Phase 2.6 satisfies issue #20.
+
+Before hosted runtime implementation proceeds, the pre-implementation sequence is:
+
+1. finish the protected ADR-026 licensing transition in Core, preserving the Perimeter implementation default, the exact prospective MIT exception in `LICENSING_BOUNDARY.json`, historical MIT grants, and the user-data boundary;
+2. establish basic protected-`main` policy on the public `runethread/memory-template`, then land only the scoped MIT license/copyright notice for the Runethread-authored interoperability material it already distributes; do not modify existing private/user memory repositories merely for notice remediation;
+3. complete Hosted's protected ADR-026 transition, including its Perimeter implementation default and explicit historical-MIT/rightsholder boundary, before any runtime/Worker source is merged;
+4. introduce the reproducibly locked TypeScript/Cloudflare developer toolchain and a fail-closed **non-operational Worker shell only**, with lockfile-based install, generated Worker type verification, runtime tests, cross-platform developer-toolchain CI, and npm Dependabot; no provider resource or production deployment is authorized by that slice;
+5. before auth/API implementation, establish an independently reviewed hosted release-identity/release-pipeline baseline that pins what may become a hosted release while keeping deployment disabled until its later security/deployment gate;
+6. only then begin the accepted hosted request/auth/repository-binding and persistence sequence below.
 
 For Phase 2.6 work:
 
-- start from freshly verified `main` and ADR-012/ADR-013 invariants as amended/qualified by ADR-014 through ADR-025;
+- start from freshly verified `main` and ADR-012/ADR-013 invariants as amended/qualified by ADR-014 through ADR-026;
+- treat ADR-026 as a licensing/governance boundary, not as a memory-contract semantic change: current contract v9 remains the immutable MIT-era release; prospective MIT treatment is limited to the exact material and byte identities recorded in `LICENSING_BOUNDARY.json`, Perimeter is the default everywhere else, historical MIT grants remain intact, and no post-transition Core release may publish until mixed-license packaging provides both the required Perimeter and MIT notice material; until then the release workflow remains fail-closed above v0.9.0;
 - treat contract v9 as the completed normal hosted-write compatibility floor. Normal hosted mutation admission MUST reject contract-v8 repositories rather than silently omitting v8-required project current-state synchronization; supported v8 repositories may be inspected/reconciled and upgraded through the released path;
 - treat the Runethread-managed v9 memory-repository validation workflow transition as completed downstream state: normal hosted canonical pushes no longer trigger redundant full validation, every retained external `uses:` Action is pinned to a verified full-length commit SHA, exact prior managed workflow recognition remains the supported migration source, and customized/unrecognized workflow state is not silently overwritten;
 - treat generated/current v9 support prose alignment as completed migration state: project current-state/overview prose is an orientation/materialized view rather than a canonical source, project-view user bytes remain preserved, and automatic README replacement is limited to exact recognized prior managed README state rather than a broad heading/lock heuristic;
@@ -513,7 +567,9 @@ ADR-025 requires publication quiescence to cover delayed gateway/token issuance 
 
 ### Phase 2.6 architecture-freeze gate
 
-Before implementation begins, the exact current ADR/planning head must complete a fresh adversarial architecture review covering correctness, contract compatibility, state ownership, component necessity, async interleaving, concurrency, crash/retry/ambiguous-response behavior, destructive Durable Object rollback/recreation, rollback-durable terminal dispositions, privilege/evidence-authority boundaries, evidence retention, ADR-024 journal append linearization/complete-tail proof/recovery-barrier fencing/no-active-epoch-compaction semantics, hosted provider/Cloudflare TCB assumptions, independent request-to-candidate conformance, deterministic/full candidate commit-object envelope and object closure, independent terminal-success verification, publisher-capability lifetime, exact remote publication, proven/possible publication-history preservation, accepted-history reconciliation, repository visibility/privacy, canonical-ref lifecycle, managed-bootstrap/support rollout, workflow supply-chain immutability, deployment/version skew, resource limits, and avoidable latency/duplication.
+The architecture-freeze review for ADR-012 through ADR-025 is complete and passed on the exact planning head merged in PR #26. ADR-026 does not reopen the memory-delivery state-machine architecture; it is a separate licensing/governance gate. Changes to the accepted memory-delivery architecture remain subject to the same zero-edit exact-head adversarial review rule.
+
+Before any material architecture amendment is treated as frozen, the exact current ADR/planning head must complete a fresh adversarial architecture review covering correctness, contract compatibility, state ownership, component necessity, async interleaving, concurrency, crash/retry/ambiguous-response behavior, destructive Durable Object rollback/recreation, rollback-durable terminal dispositions, privilege/evidence-authority boundaries, evidence retention, ADR-024 journal append linearization/complete-tail proof/recovery-barrier fencing/no-active-epoch-compaction semantics, hosted provider/Cloudflare TCB assumptions, independent request-to-candidate conformance, deterministic/full candidate commit-object envelope and object closure, independent terminal-success verification, publisher-capability lifetime, exact remote publication, proven/possible publication-history preservation, accepted-history reconciliation, repository visibility/privacy, canonical-ref lifecycle, managed-bootstrap/support rollout, workflow supply-chain immutability, deployment/version skew, resource limits, and avoidable latency/duplication.
 
 The review passes only if it produces **zero required architecture or planning edits**. Any material correction, simplification, missing invariant, or changed implementation boundary must be recorded first and resets the gate; the full review then repeats against the new exact head. Green CI or a review of an older head does not satisfy the gate.
 
@@ -537,9 +593,9 @@ A later full review explicitly examined synchronized planning head `ba9f185390b5
 
 After the v0.9 rollout completed, an independent engineering audit challenged two assumptions which that review lineage had not frozen concretely: ADR-019 still permitted multiple "equivalent" safety-journal schemes even though rollback correctness depends on append linearization/tail/fencing/compaction semantics, and the accepted hosted documents did not explicitly state whether Cloudflare account/provider/evidence-store integrity is inside the v1 TCB. Those are material planning findings. ADR-024 freezes one sequential exact-byte hash-linked conditional-create journal protocol with complete-tail `RECOVERY_BARRIER` fencing and no active-epoch compaction, and explicitly places the Runethread-controlled Cloudflare provider/account/evidence infrastructure inside the v1 TCB while leaving malicious full-provider/account compromise outside the promised v1 threat model.
 
-**ADR-024 therefore reopens the architecture freeze.** The previous zero-edit result remains valid evidence about the older exact head but cannot authorize journal-dependent hosted implementation against the amended architecture. No new attack review is started as part of the ADR-024 amendment housekeeping. Implementation remains blocked until a fresh full adversarial review of the exact synchronized planning head containing ADR-024 itself requires zero architecture/planning edits.
+ADR-024 therefore reopened the architecture freeze. The subsequent full review of exact head `967446acd8ab45f6d052d6405d4c2c65f5d69b0b` against base `7f5cf86f23604426c7e8f69086fdcbe27fb86226` found two required changes: publication fencing omitted already-admitted remote requests/delayed issuance (ADR-025), and ROADMAP.md/issue #20 retained contradictory current-work instructions. That review failed the zero-edit gate.
 
-The full review of exact head `967446acd8ab45f6d052d6405d4c2c65f5d69b0b` against base `7f5cf86f23604426c7e8f69086fdcbe27fb86226` completed before corrections and found two required changes: publication fencing omitted already-admitted remote requests/delayed issuance (ADR-025), and ROADMAP.md/issue #20 retained contradictory current-work instructions. That review failed the zero-edit gate. These corrections require a fresh full review of the new synchronized head; the exact result is recorded on PR #26 without editing a passing head merely to record its pass.
+The corrected synchronized head containing ADR-025 then completed a fresh full exact-head review with **zero required architecture/planning edits** and was merged through Core PR #26 as `22995a7cf7d1c6c0f4ce548fd83667468b356f42` / tree `ef1d3c6a4e8a783cc0657b15a61703a5fa52d6d9`. That is the current accepted Phase 2.6 architecture baseline.
 
 Prototype questions may remain only when an accepted invariant-preserving fallback already exists and architecture does not depend on guessing the outcome. The current GraphQL expected-old ref path is such a delegated prototype because the exact Git-protocol publisher remains the expected-old/exact-object fallback until exact candidate-object identity and App-permission behavior are proven by integration tests; unresolved remote completion follows ADR-025 and carries no bounded automatic-recovery promise.
 
