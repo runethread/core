@@ -3,22 +3,26 @@
 
 /.gitattributes @Karageorgiou
 /AGENTS.md @Karageorgiou
+/RUNETHREAD_INVARIANTS.json @Karageorgiou
 /LICENSE @Karageorgiou
 /LICENSE-MIT @Karageorgiou
 /LICENSING.md @Karageorgiou
 /LICENSING_BOUNDARY.json @Karageorgiou
 /README.md @Karageorgiou
 /docs/adr/ADR-026-runethread-licensing-and-commercial-model.md @Karageorgiou
+/docs/adr/ADR-027-project-invariant-registry-and-decision-discipline.md @Karageorgiou
 /docs/adr/README.md @Karageorgiou
 /docs/runethread/ENGINEERING_PROCESS.md @Karageorgiou
 /docs/runethread/DEVELOPMENT_PIPELINE.md @Karageorgiou
 /docs/runethread/CURRENT_MILESTONE.md @Karageorgiou
+/docs/runethread/INVARIANTS.md @Karageorgiou
 /docs/runethread/ROADMAP.md @Karageorgiou
 /.github/pull_request_template.md @Karageorgiou
 /.github/workflows/ @Karageorgiou
 /.github/dependabot.yml @Karageorgiou
 /.github/CODEOWNERS @Karageorgiou
 /scripts/check* @Karageorgiou
+/invariants_policy_test.go @Karageorgiou
 /internal/starter/output_identity_test.go @Karageorgiou
 /internal/trust/ @Karageorgiou
 /internal/upgrader/ @Karageorgiou
