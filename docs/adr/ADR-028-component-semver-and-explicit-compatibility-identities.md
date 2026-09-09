@@ -5,16 +5,16 @@ Date: 2026-09-09
 
 ## Context
 
-Runethread already publishes Core releases using SemVer-shaped identifiers such as `v0.6.0` through `v0.9.0`, while the compatibility model separately tracks contract release/version, repository format, schema, index format, trust-lock version, bootstrap protocol, and other exact identities.
+Runethread already publishes Core releases using `v`-prefixed, SemVer-shaped identifiers such as `v0.6.0` through `v0.9.0`, while the compatibility model separately tracks contract release/version, repository format, schema, index format, trust-lock version, bootstrap protocol, and other exact identities.
 
 Phase 2.6 introduces independently released Hosted software and will later introduce provider/MCP adapters and additional Hosted protocols. A durable versioning rule is therefore needed before Hosted can produce a release identity. The rule must communicate human-facing release meaning without collapsing independent compatibility surfaces into one overloaded number or forcing unrelated components into lockstep releases.
 
 ## Decision
 
-Runethread adopts Semantic Versioning 2.0.0 for independently released software/component versions.
+Runethread adopts Semantic Versioning 2.0.0 for independently released software/component version values.
 
 1. Core, Hosted, and future adapters/integrations have independent SemVer release lines.
-2. Public release identifiers/tags use a `v` prefix around the SemVer value, for example `v0.10.2`.
+2. The canonical SemVer value is the unprefixed SemVer string, for example `0.10.2`. Runethread public release identifiers/tags add exactly one project `v` prefix, for example `v0.10.2`. The `v` is not part of the SemVer value itself.
 3. SemVer does not replace explicit Runethread compatibility dimensions. Contract release/version, repository format, schema, index format, trust-lock, bootstrap, and future Hosted protocol identities remain independently versioned where applicable.
 4. Exact correctness/reproducibility continues to use immutable Git/object/artifact/dependency/provider identities in addition to the human release version.
 5. Core runtime-release and contract-release separation from ADR-011 remains unchanged.
@@ -30,6 +30,7 @@ The detailed normative project policy is `docs/runethread/VERSIONING.md`.
 
 - A Hosted version can advance independently of Core and vice versa.
 - Human versions communicate the kind of component change without pretending to prove exact bytes.
+- Tools that need strict SemVer parse the value without the Runethread `v` prefix; tag/release tooling separately verifies exactly one `v` prefix around that value.
 - Existing explicit compatibility dimensions remain first-class and can advance independently of component SemVer.
 - Release tooling must bind SemVer to exact commit/tree/artifact and dependent compatibility identities when correctness requires it.
 - Version selection requires identifying the component's supported public compatibility promise; a convenient version number cannot hide a breaking contract/schema/protocol change.
@@ -62,7 +63,7 @@ Rejected. Encoding runtime, contract, schema, repository format, protocol, and b
 
 Implementation/release tooling and review should demonstrate that:
 
-1. component release identifiers accept strict SemVer with the project `v` prefix and reject malformed forms;
+1. the SemVer value parses as strict SemVer 2.0.0, while public release identifiers/tags contain exactly one Runethread `v` prefix around that value and malformed forms are rejected;
 2. Core, Hosted, and adapter release versions are not assumed to match numerically;
 3. release manifests bind dependent component/contract/protocol identities explicitly rather than relying on matching version numbers;
 4. a component release can advance while durable compatibility dimensions remain unchanged;
