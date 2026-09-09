@@ -2,7 +2,7 @@
 
 Status: **Active project policy after acceptance of ADR-028**
 
-Runethread uses **Semantic Versioning 2.0.0** for human-facing software/component version values while retaining separate explicit compatibility dimensions and immutable cryptographic identities.
+Runethread uses [**Semantic Versioning 2.0.0**](https://semver.org/spec/v2.0.0.html) for human-facing software/component version values while retaining separate explicit compatibility dimensions and immutable cryptographic identities.
 
 Runethread public release identifiers/tags add exactly one project `v` prefix around the SemVer value. For example, the SemVer value `0.10.2` is published as the Runethread release identifier/tag `v0.10.2`. The `v` prefix is not part of the SemVer value itself.
 
@@ -133,17 +133,19 @@ Likewise, a component release may advance while every durable compatibility dime
 
 ## 8. Release decision examples
 
-| Change | Typical component bump | Other required identity action |
+Every release necessarily has new exact source/release identities. The table below focuses on whether an additional compatibility-dimension action is required.
+
+| Change | Typical component bump | Other required compatibility action |
 | --- | --- | --- |
-| Internal bug fix with unchanged public behavior | PATCH | none unless exact build identity changes |
+| Internal bug fix with unchanged public behavior | PATCH | no compatibility-dimension bump |
 | Backward-compatible new command/API capability | MINOR | version any new protocol surface if needed |
-| Security fix preserving supported interface | PATCH | update exact source/artifact identity |
+| Security fix preserving supported interface | PATCH | no compatibility-dimension bump unless the fix changes a versioned compatibility surface |
 | Breaking public API change before 1.0 | MINOR | migration/compatibility documentation as applicable |
 | Breaking public API change at/after 1.0 | MAJOR | migration/compatibility documentation as applicable |
 | Core runtime improvement with unchanged contract | PATCH or MINOR according to user-visible impact | contract release/version unchanged |
 | Core contract semantic change | component bump according to public impact | contract release/version advances; migration/fixtures as required |
 | Repository layout incompatibility | component bump according to public impact | repository format advances; migration required |
-| Hosted implementation change with same API/protocol set | PATCH or MINOR according to user-visible impact | exact Hosted build/artifact identity advances |
+| Hosted implementation change with same API/protocol set | PATCH or MINOR according to user-visible impact | Hosted API/protocol identities unchanged |
 
 When classification is genuinely ambiguous, the release owner must resolve the public compatibility promise explicitly before assigning the version.
 
@@ -152,7 +154,7 @@ When classification is genuinely ambiguous, the release owner must resolve the p
 The canonical component SemVer value is unprefixed. Public Runethread release identifiers/tags use exactly one `v` prefix:
 
 ```text
-SemVer value:              0.10.2
+SemVer value:             0.10.2
 Runethread release tag:   v0.10.2
 ```
 
