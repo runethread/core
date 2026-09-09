@@ -42,6 +42,7 @@ The architecture documents describe the target system. Accepted decisions govern
 | [ADR-025](ADR-025-publication-quiescence-includes-remote-requests.md) | Publication quiescence includes remote requests | Accepted |
 | [ADR-026](ADR-026-runethread-licensing-and-commercial-model.md) | Runethread licensing and commercial model | Accepted |
 | [ADR-027](ADR-027-project-invariant-registry-and-decision-discipline.md) | Project invariant registry and decision discipline | Accepted |
+| [ADR-028](ADR-028-component-semver-and-explicit-compatibility-identities.md) | Component SemVer and explicit compatibility identities | Accepted |
 
 ADR-014 amends the initial GitHub-Actions-backed implementation profile described in ADR-012/ADR-013. Their candidate-before-canonical, independent-audit, exact-revision publication, idempotency, stale-reprepare, and per-repository serialization invariants remain accepted.
 
@@ -70,6 +71,8 @@ ADR-025 requires publication quiescence to cover delayed gateway/token issuance 
 ADR-026 establishes the project-wide licensing/commercial model. Current Core and Hosted implementation source uses PolyForm Perimeter 1.0.1 after each repository's reviewed transition. The only prospective permissive interoperability grant is the **exact machine-guarded MIT exception** recorded in `LICENSING_BOUNDARY.json`; **Perimeter remains the default outside that exception**. `AI_SETUP.md` future changes are outside the prospective exception, generated output is permissive only at exact approved byte identities, and the public memory template is not blanket-licensed by repository membership. Historical MIT grants remain intact, user-authored data is outside the software-license grant, commercial exceptions remain possible, and explicit inbound-rights policy is required before material third-party source contributions are merged when separate commercial-licensing flexibility is intended.
 
 ADR-027 establishes the project-wide invariant registry and decision discipline. `RUNETHREAD_INVARIANTS.json` is the canonical machine-readable set of active project invariants, intentionally smaller than the ADR catalog. ADRs continue to own architecture/design decisions; implementation details and milestone/version constraints are not promoted merely because they are important today. Substantive changes must classify invariant impact, agents and contributors must reason from the actual project objective rather than agreement-seeking or novelty, and specialized exact machine authorities such as the ADR-026 boundary remain single sources of truth rather than being duplicated into the general registry.
+
+ADR-028 establishes project-wide software-component release versioning. Core, Hosted, and future adapters/integrations use independent Semantic Versioning release lines while durable compatibility dimensions such as contract, repository format, schema, trust, bootstrap, and future Hosted protocols remain explicitly separate. SemVer communicates human release meaning; immutable commit/tree/artifact identities continue to prove exact bytes. Pre-1.0 PATCH releases remain backward-compatible under project policy, and breaking public changes require at least a MINOR bump plus explicit disclosure.
 
 ## ADR format
 
