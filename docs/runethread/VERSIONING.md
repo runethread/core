@@ -2,7 +2,9 @@
 
 Status: **Active project policy after acceptance of ADR-028**
 
-Runethread uses **Semantic Versioning 2.0.0** for human-facing software/component release versions while retaining separate explicit compatibility dimensions and immutable cryptographic identities.
+Runethread uses **Semantic Versioning 2.0.0** for human-facing software/component version values while retaining separate explicit compatibility dimensions and immutable cryptographic identities.
+
+Runethread public release identifiers/tags add exactly one project `v` prefix around the SemVer value. For example, the SemVer value `0.10.2` is published as the Runethread release identifier/tag `v0.10.2`. The `v` prefix is not part of the SemVer value itself.
 
 This policy applies prospectively. Historical Runethread releases such as `v0.6.0` through `v0.9.0` remain immutable published history; this document does not retroactively reinterpret their contract bytes or compatibility guarantees.
 
@@ -12,10 +14,18 @@ Runethread deliberately separates three questions.
 
 ### Component release identity
 
-Each independently released software component has its own SemVer release line using a `v`-prefixed public identifier:
+Each independently released software component has its own SemVer release line.
+
+The semantic version value has the standard form:
 
 ```text
-vMAJOR.MINOR.PATCH
+MAJOR.MINOR.PATCH
+```
+
+The public Runethread release identifier/tag wraps that value as:
+
+```text
+v<SemVer>
 ```
 
 Examples include Core, Hosted, and future provider/MCP adapters. Components do **not** share one lockstep project version merely because they belong to Runethread.
@@ -51,11 +61,11 @@ SemVer communicates release meaning. Compatibility dimensions determine whether 
 
 `runethread/core`, `runethread/hosted`, and future adapters/integrations version independently.
 
-For example, all of the following may be valid at the same time:
+For example, all of the following public release identifiers may be valid at the same time:
 
 ```text
-Core       v0.10.2
-Hosted     v0.3.0
+Core        v0.10.2
+Hosted      v0.3.0
 MCP adapter v0.2.1
 Core contract release v0.9.0 / contract 9
 ```
@@ -74,7 +84,7 @@ A security fix does not automatically qualify as PATCH: if the only correct fix 
 
 ## 4. Pre-1.0 policy
 
-Runethread is currently in initial development. For `0.y.z` component releases, SemVer permits instability; Runethread uses the following stricter project rule:
+Runethread is currently in initial development. For `0.y.z` component versions, SemVer permits instability; Runethread uses the following stricter project rule:
 
 - **MINOR (`0.Y.0`)** — required for any intentional backward-incompatible public change; also used for meaningful backward-compatible feature additions;
 - **PATCH (`0.y.Z`)** — only for backward-compatible fixes/corrections within the current public compatibility promise.
@@ -85,7 +95,7 @@ A pre-1.0 breaking change must be called out explicitly in release notes/migrati
 
 ## 5. Prerelease and build metadata
 
-SemVer prerelease identifiers may be used for intentionally non-final releases, for example:
+SemVer prerelease identifiers may be used for intentionally non-final releases. Their public Runethread release identifiers/tags therefore look like:
 
 ```text
 v0.3.0-alpha.1
@@ -139,13 +149,16 @@ When classification is genuinely ambiguous, the release owner must resolve the p
 
 ## 9. Tags and release manifests
 
-Public component release tags use the form:
+The canonical component SemVer value is unprefixed. Public Runethread release identifiers/tags use exactly one `v` prefix:
 
 ```text
-v<SemVer>
+SemVer value:              0.10.2
+Runethread release tag:   v0.10.2
 ```
 
-A release manifest must never rely on that tag alone when correctness requires stronger identity. It should bind the component version to the exact source commit/tree, relevant compatibility dimensions, dependent component/protocol versions, and artifact digests appropriate to that component.
+Release tooling must validate these as two related but distinct representations rather than treating `v0.10.2` itself as a raw SemVer string.
+
+A Runethread release manifest may store the project's `v`-prefixed release identifier when its schema says so. A release manifest must never rely on that identifier alone when correctness requires stronger identity. It should bind the component release identifier to the exact source commit/tree, relevant compatibility dimensions, dependent component/protocol versions, and artifact digests appropriate to that component.
 
 Mutable branches such as `main` are development references, not release identities.
 
